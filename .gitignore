@@ -12,6 +12,7 @@ logs/
 *.iml
 *.log
 .coverage
+.envrc
 .pdm-python
 .python-version
 pdm.lock
