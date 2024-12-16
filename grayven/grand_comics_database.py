@@ -11,7 +11,7 @@ from ratelimit import limits, sleep_and_retry
 
 from grayven import __version__
 from grayven.exceptions import ServiceError
-from grayven.schemas.issue import Issue
+from grayven.schemas.issue import BasicIssue, Issue
 from grayven.schemas.publisher import Publisher
 from grayven.schemas.series import Series
 from grayven.sqlite_cache import SQLiteCache
@@ -45,7 +45,12 @@ class GrandComicsDatabase:
         except RequestError as err:
             raise ServiceError("Unable to connect to '%s'", url) from err
         except HTTPStatusError as err:
-            raise ServiceError(err) from err
+            try:
+                if err.response.status_code == 404:
+                    raise ServiceError(err.response.json()["detail"])
+                raise ServiceError(err) from err
+            except JSONDecodeError as err:
+                raise ServiceError("Unable to parse response from '%s' as Json", url) from err
         except JSONDecodeError as err:
             raise ServiceError("Unable to parse response from '%s' as Json", url) from err
         except TimeoutException as err:
@@ -58,7 +63,7 @@ class GrandComicsDatabase:
             params = {}
         params["format"] = "json"
 
-        url = self.API_URL + endpoint
+        url = self.API_URL + endpoint + "/"
         cache_params = f"?{urlencode({k: params[k] for k in sorted(params)})}"
         cache_key = url + cache_params
 
@@ -87,9 +92,9 @@ class GrandComicsDatabase:
             results.extend(response["results"])
         return results[:max_results]
 
-    def list_publishers(self) -> list[Publisher]:
+    def list_publishers(self, max_results: int = 500) -> list[Publisher]:
         try:
-            results = self._get_paged_request(endpoint="/publisher")
+            results = self._get_paged_request(endpoint="/publisher", max_results=max_results)
             return TypeAdapter(list[Publisher]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -101,9 +106,20 @@ class GrandComicsDatabase:
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def list_series(self) -> list[Series]:
+    def list_series(
+        self, name: Optional[str] = None, year: Optional[int] = None, max_results: int = 500
+    ) -> list[Series]:
         try:
-            results = self._get_paged_request(endpoint="/series")
+            if name is None:
+                results = self._get_paged_request(endpoint="/series", max_results=max_results)
+            elif year is None:
+                results = self._get_paged_request(
+                    endpoint=f"/series/name/{name}", max_results=max_results
+                )
+            else:
+                results = self._get_paged_request(
+                    endpoint=f"/series/name/{name}/year/{year}", max_results=max_results
+                )
             return TypeAdapter(list[Series]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -112,6 +128,28 @@ class GrandComicsDatabase:
         try:
             result = self._get_request(endpoint=f"/series/{id}")
             return TypeAdapter(Series).validate_python(result)
+        except ValidationError as err:
+            raise ServiceError(err) from err
+
+    def list_issues(
+        self,
+        series_name: str,
+        issue_number: int,
+        year: Optional[int] = None,
+        max_results: int = 500,
+    ) -> list[BasicIssue]:
+        try:
+            if year is None:
+                results = self._get_paged_request(
+                    endpoint=f"/series/name/{series_name}/issue/{issue_number}",
+                    max_results=max_results,
+                )
+            else:
+                results = self._get_paged_request(
+                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/year/{year}",
+                    max_results=max_results,
+                )
+            return TypeAdapter(list[BasicIssue]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
 

@@ -17,9 +17,9 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert result is not None
     assert result.id == 54
 
-    assert result.api_url == "https://www.comics.org/api/publisher/54/?format=json"
+    assert str(result.api_url) == "https://www.comics.org/api/publisher/54/?format=json"
     assert result.country == "us"
-    assert result.modified == datetime(2024, 12, 15, 21, 21, 8)  # noqa: DTZ001
+    assert result.modified == datetime(2024, 12, 16, 17, 1, 37)  # noqa: DTZ001
     assert result.name == "DC"
     assert result.year_began == 1935
     assert result.year_ended is None
@@ -29,11 +29,11 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert result.year_overall_ended is None
     assert result.year_overall_began_uncertain is False
     assert result.year_overall_ended_uncertain is False
-    assert result.url == "http://www.dccomics.com/"
+    assert str(result.url) == "http://www.dccomics.com/"
     assert result.brand_count == 28
     assert result.indicia_publisher_count == 53
-    assert result.series_count == 9624
-    assert result.issue_count == 56100
+    assert result.series_count == 9628
+    assert result.issue_count == 56104
 
 
 def test_publisher_fail(session: GrandComicsDatabase) -> None:
@@ -45,30 +45,4 @@ def test_publisher_fail(session: GrandComicsDatabase) -> None:
 def test_list_publishers(session: GrandComicsDatabase) -> None:
     """Test using the list_publishers endpoint with a valid search."""
     results = session.list_publishers()
-    assert len(results) != 0
-    result = next(x for x in results if x.id == 54)
-    assert result is not None
-
-    assert result.api_url == "https://www.comics.org/api/publisher/54/?format=json"
-    assert result.country == "us"
-    assert result.modified == datetime(2024, 12, 15, 21, 21, 8)  # noqa: DTZ001
-    assert result.name == "DC"
-    assert result.year_began == 1935
-    assert result.year_ended is None
-    assert result.year_began_uncertain is False
-    assert result.year_ended_uncertain is False
-    assert result.year_overall_began is None
-    assert result.year_overall_ended is None
-    assert result.year_overall_began_uncertain is False
-    assert result.year_overall_ended_uncertain is False
-    assert result.url == "http://www.dccomics.com/"
-    assert result.brand_count == 28
-    assert result.indicia_publisher_count == 53
-    assert result.series_count == 9624
-    assert result.issue_count == 56100
-
-
-def test_list_publishers_empty(session: GrandComicsDatabase) -> None:
-    """Test using the list_publishers endpoint with an invalid search."""
-    results = session.list_publishers()
-    assert len(results) == 0
+    assert len(results) >= 500

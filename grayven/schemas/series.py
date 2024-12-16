@@ -22,12 +22,12 @@ class Series(BaseModel):
     publishing_format: str
     notes: str  # or Blank
     year_began: int
-    year_ended: int
+    year_ended: Optional[int]
     publisher: HttpUrl
 
     @property
     def id(self) -> Optional[int]:
-        match = re.search(r"/series/(\d+)/", self.api_url)
+        match = re.search(r"/series/(\d+)/", str(self.api_url))
         if match:
-            return int(match.group(1))  # Convert the extracted id to an integer
+            return int(match.group(1))
         return None

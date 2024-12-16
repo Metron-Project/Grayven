@@ -45,7 +45,10 @@ dependencies = [
   "eval-type-backport >= 0.2.0; python_version < '3.10'",
   "httpx[http2]>=0.28.1",
   "pydantic >= 2.10.3",
-  "ratelimit >= 2.2.1"
+  "pytest-cov>=6.0.0",
+  "pytest>=8.3.4",
+  "ratelimit >= 2.2.1",
+  "rich>=13.9.4",
 ]
 description = "A Python wrapper for the Grand Comics Database API."
 dynamic = ["version"]
@@ -96,6 +99,7 @@ ignore = [
   "D",
   "EM101",
   "FBT",
+  "PLR2004",
   "TCH",
   "TRY003"
 ]

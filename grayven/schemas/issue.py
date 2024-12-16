@@ -1,6 +1,7 @@
-__all__ = ["Genre", "Issue", "Story", "StoryType"]
+__all__ = ["Issue", "Story", "StoryType"]
 
 import re
+from datetime import date
 from enum import Enum
 from typing import Optional
 
@@ -16,11 +17,6 @@ class StoryType(str, Enum):
     ADVERTISEMENT = "advertisement"
 
 
-class Genre(str, Enum):
-    SATIRE_PARODY = "satire-parody"
-    SUPERHERO = "superhero"
-
-
 class Story(BaseModel):
     type: StoryType
     title: str  # or Blank
@@ -34,36 +30,39 @@ class Story(BaseModel):
     letters: str  # or Blank
     editing: str  # or Blank
     job_number: str  # or Blank
-    genre: Optional[Genre]
+    genre: str  # or Blank
     characters: str  # or Blank
     synopsis: str
     notes: str  # or Blank
 
 
-class Issue(BaseModel):
+class BasicIssue(BaseModel):
     api_url: HttpUrl
     series_name: str
     descriptor: str
     publication_date: str
     price: str
     page_count: str
+    variant_of: Optional[HttpUrl]
+    series: HttpUrl
+
+    @property
+    def id(self) -> Optional[int]:
+        match = re.search(r"/issue/(\d+)/", str(self.api_url))
+        if match:
+            return int(match.group(1))
+        return None
+
+
+class Issue(BasicIssue):
     editing: str
     indicia_publisher: str
     brand: str
     isbn: str  # or Blank
     barcode: str  # or Blank
     rating: str  # or Blank
-    on_sale_date: str  # or Blank
+    on_sale_date: Optional[date]
     indicia_frequency: str
     notes: str
-    variant_of: Optional[bytes]  # TODO: Work out typing
-    series: HttpUrl
     story_set: list[Story]
     cover: HttpUrl
-
-    @property
-    def id(self) -> Optional[int]:
-        match = re.search(r"/issue/(\d+)/", self.api_url)
-        if match:
-            return int(match.group(1))  # Convert the extracted id to an integer
-        return None
