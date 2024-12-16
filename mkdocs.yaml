@@ -59,7 +59,7 @@ nav:
       - Package: grayven/schemas/__init__.md
       - issue: grayven/schemas/issue.md
       - publisher: grayven/schemas/publisher.md
-      - series: grayven/schemas/volume.md
+      - series: grayven/schemas/series.md
 
 plugins:
   - search
