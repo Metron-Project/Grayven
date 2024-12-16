@@ -1,0 +1,3 @@
+# Exceptions
+
+::: grayven.exceptions.ServiceError

@@ -1,0 +1,128 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[dependency-groups]
+dev = [
+  "pre-commit >= 4.0.1"
+]
+docs = [
+  "mkdocs >= 1.6.1",
+  "mkdocs-include-markdown-plugin >= 7.1.2",
+  "mkdocs-material >= 9.5.48",
+  "mkdocstrings[python] >= 0.27.0"
+]
+tests = [
+  "pytest >= 8.3.4",
+  "pytest-cov >= 6.0.0",
+  "tox >= 4.23.2",
+  "tox-uv >= 1.16.1"
+]
+
+[project]
+authors = [
+  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"}
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Natural Language :: English",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
+  "Topic :: Internet",
+  "Typing :: Typed"
+]
+dependencies = [
+  "eval-type-backport >= 0.2.0; python_version < '3.10'",
+  "httpx[http2]>=0.28.1",
+  "pydantic >= 2.10.3",
+  "ratelimit >= 2.2.1"
+]
+description = "A Python wrapper for the Grand Comics Database API."
+dynamic = ["version"]
+keywords = ["comic", "comics", "metadata"]
+license = {text = "MIT"}
+maintainers = [
+  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"}
+]
+name = "Grayven"
+readme = "README.md"
+requires-python = ">= 3.9"
+
+[project.urls]
+Homepage = "https://pypi.org/project/Grayven"
+Issues = "https://github.com/Buried-In-Code/Grayven/issues"
+Source = "https://github.com/Buried-In-Code/Grayven"
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.run]
+source = ["grayven"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [".github/"]
+
+[tool.hatch.version]
+path = "grayven/__init__.py"
+
+[tool.pytest.ini_options]
+addopts = ["--cov"]
+
+[tool.ruff]
+fix = true
+line-length = 100
+output-format = "grouped"
+show-fixes = true
+unsafe-fixes = true
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "native"
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+ignore = [
+  "COM812",
+  "D",
+  "EM101",
+  "FBT",
+  "TCH",
+  "TRY003"
+]
+select = ["ALL"]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+mypy-init-return = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "pydantic.field_validator"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004", "S101"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
