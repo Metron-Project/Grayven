@@ -45,7 +45,7 @@ dependencies = [
   "eval-type-backport >= 0.2.0; python_version < '3.10'",
   "httpx >= 0.28.1",
   "pydantic >= 2.10.3",
-  "ratelimit >= 2.2.1",
+  "ratelimit >= 2.2.1"
 ]
 description = "A Python wrapper for the Grand Comics Database API."
 dynamic = ["version"]
@@ -93,7 +93,7 @@ skip-magic-trailing-comma = true
 [tool.ruff.lint]
 ignore = [
   "COM812",
-  "D",
+  "D107",
   "EM101",
   "FBT",
   "PLR2004",
@@ -127,3 +127,16 @@ convention = "google"
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
+
+[tool.tomlsort]
+all = true
+overrides."tool.tox.env.test.commands".inline_arrays = false
+overrides."tool.tox.env_list".inline_arrays = false
+
+[tool.tox]
+env_list = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+min_version = "4.22"
+
+[tool.tox.env.test]
+commands = [["python --version"], ["pytest"]]
+dependency_groups = ["tests"]

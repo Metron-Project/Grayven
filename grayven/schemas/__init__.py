@@ -1,7 +1,6 @@
 """grayven.schemas package entry file.
 
 This module provides the following classes:
-
 - BaseModel
 """
 
@@ -18,4 +17,4 @@ class BaseModel(
     revalidate_instances="always",
     extra="forbid",
 ):
-    """Base model for grayven resources."""
+    """Base model for Grayven resources."""

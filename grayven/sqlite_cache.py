@@ -1,7 +1,6 @@
 """The SQLiteCache module.
 
 This module provides the following classes:
-
 - SQLiteCache
 """
 
@@ -16,15 +15,11 @@ from grayven import get_cache_root
 
 
 class SQLiteCache:
-    """The SQLiteCache object to cache search results from GrandComicsDatabase.
+    """The SQLiteCache object to cache search results from GCD.
 
     Args:
         path: Path to database.
         expiry: How long to keep cache results.
-
-    Attributes:
-        expiry (int | None): How long to keep cache results.
-        connection (sqlite3.Connection): Database connection
     """
 
     def __init__(self, path: Optional[Path] = None, expiry: Optional[int] = 14):
@@ -39,7 +34,8 @@ class SQLiteCache:
         """Retrieve data from the cache database.
 
         Args:
-            key: Search string
+            key: Search string.
+
         Returns:
             Empty dict or select results.
         """
@@ -59,8 +55,8 @@ class SQLiteCache:
         """Insert data into the cache database.
 
         Args:
-            key: Search string
-            value: Data to save
+            key: Search string.
+            value: Data to save.
         """
         self.connection.execute(
             "INSERT INTO queries (query, response, query_date) VALUES (?, ?, ?);",

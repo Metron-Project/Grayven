@@ -8,10 +8,10 @@ from pathlib import Path
 
 
 def get_cache_root() -> Path:
-    """Create and return the path to the cache for grayven, supports XDG_CACHE_HOME env.
+    """Create and return the path to the cache for Grayven, supports XDG_CACHE_HOME env.
 
     Returns:
-        The path to the grayven cache folder.
+        The path to the Grayven cache folder.
     """
     cache_home = os.getenv("XDG_CACHE_HOME", default=str(Path.home() / ".cache"))
     folder = Path(cache_home).resolve() / "grayven"

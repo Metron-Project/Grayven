@@ -1,3 +1,9 @@
+"""The GrandComicsDatabase module.
+
+This module provides the following classes:
+- GrandComicsDatabase
+"""
+
 __all__ = ["GrandComicsDatabase"]
 
 import platform
@@ -20,6 +26,13 @@ MINUTE = 60
 
 
 class GrandComicsDatabase:
+    """Class with functionality to request GCD API endpoints.
+
+    Args:
+      timeout: Set how long requests will wait for a response (in seconds).
+      cache: SQLiteCache to use if set.
+    """
+
     API_URL = "https://www.comics.org/api"
 
     def __init__(self, timeout: int = 30, cache: Optional[SQLiteCache] = None):
@@ -35,6 +48,18 @@ class GrandComicsDatabase:
     def _perform_get_request(
         self, url: str, params: Optional[dict[str, str]] = None
     ) -> dict[str, Any]:
+        """Make GET request to GCD API endpoint.
+
+        Args:
+          url: The url to request information from.
+          params: Parameters to add to the request.
+
+        Returns:
+          Json response from the GCD API.
+
+        Raises:
+          ServiceError: If there is an issue with the request or response from the GCD API.
+        """
         if params is None:
             params = {}
 
@@ -59,6 +84,19 @@ class GrandComicsDatabase:
     def _get_request(
         self, endpoint: str, params: Optional[dict[str, str]] = None, skip_cache: bool = False
     ) -> dict[str, Any]:
+        """Check cache or make GET request to GCD API endpoint.
+
+        Args:
+          endpoint: The endpoint to request information from.
+          params: Parameters to add to the request.
+          skip_cache: Skip reading and writing to cache.
+
+        Returns:
+          Json response from the GCD API.
+
+        Raises:
+          ServiceError: If there is an issue with the request or response from the GCD API.
+        """
         if params is None:
             params = {}
         params["format"] = "json"
@@ -79,6 +117,16 @@ class GrandComicsDatabase:
     def _get_paged_request(
         self, endpoint: str, params: Optional[dict[str, str]] = None, max_results: int = 500
     ) -> list[dict[str, Any]]:
+        """Get results from paged requests.
+
+        Args:
+          endpoint: The endpoint to request information from.
+          params: Parameters to add to the request.
+          max_results: Limits the amount of results looked up and returned.
+
+        Returns:
+          A list of Json response results.
+        """
         if params is None:
             params = {}
         params["page"] = 1
@@ -93,6 +141,17 @@ class GrandComicsDatabase:
         return results[:max_results]
 
     def list_publishers(self, max_results: int = 500) -> list[Publisher]:
+        """Request a list of Publishers.
+
+        Args:
+          max_results: Limits the amount if results looked up and returned.
+
+        Returns:
+          A list of Publisher objects.
+
+        Raises:
+          ServiceError: If there is an issue with validating the response.
+        """
         try:
             results = self._get_paged_request(endpoint="/publisher", max_results=max_results)
             return TypeAdapter(list[Publisher]).validate_python(results)
@@ -100,6 +159,17 @@ class GrandComicsDatabase:
             raise ServiceError(err) from err
 
     def get_publisher(self, id: int) -> Optional[Publisher]:  # noqa: A002
+        """Request a Publisher using its id.
+
+        Args:
+          id: The Publisher id.
+
+        Returns:
+          A Publisher object or None if not found.
+
+        Raises:
+          ServiceError: If there is an issue with validating the response.
+        """
         try:
             result = self._get_request(endpoint=f"/publisher/{id}")
             return TypeAdapter(Publisher).validate_python(result)
@@ -109,6 +179,19 @@ class GrandComicsDatabase:
     def list_series(
         self, name: Optional[str] = None, year: Optional[int] = None, max_results: int = 500
     ) -> list[Series]:
+        """Request a list of Series.
+
+        Args:
+          name: Filter the results using the series name.
+          year: Filter the results using the series beginning year (Requires name to be passed).
+          max_results: Limits the amount if results looked up and returned.
+
+        Returns:
+          A list of Series objects.
+
+        Raises:
+          ServiceError: If there is an issue with validating the response.
+        """
         try:
             if name is None:
                 results = self._get_paged_request(endpoint="/series", max_results=max_results)
@@ -125,6 +208,17 @@ class GrandComicsDatabase:
             raise ServiceError(err) from err
 
     def get_series(self, id: int) -> Optional[Series]:  # noqa: A002
+        """Request a Series using its id.
+
+        Args:
+          id: The Series id.
+
+        Returns:
+          A Series object or None if not found.
+
+        Raises:
+          ServiceError: If there is an issue with validating the response.
+        """
         try:
             result = self._get_request(endpoint=f"/series/{id}")
             return TypeAdapter(Series).validate_python(result)
@@ -138,6 +232,20 @@ class GrandComicsDatabase:
         year: Optional[int] = None,
         max_results: int = 500,
     ) -> list[BasicIssue]:
+        """Request a list of Issues.
+
+        Args:
+          series_name: The name of the series to filter issues from.
+          issue_number: The number to filter issues by.
+          year: Filter the results using the issue year via its key_date.
+          max_results: Limits the amount if results looked up and returned.
+
+        Returns:
+          A list of Issue objects.
+
+        Raises:
+          ServiceError: If there is an issue with validating the response.
+        """
         try:
             if year is None:
                 results = self._get_paged_request(
@@ -154,6 +262,17 @@ class GrandComicsDatabase:
             raise ServiceError(err) from err
 
     def get_issue(self, id: int) -> Optional[Issue]:  # noqa: A002
+        """Request a Issue using its id.
+
+        Args:
+          id: The Issue id.
+
+        Returns:
+          A Issue object or None if not found.
+
+        Raises:
+          ServiceError: If there is an issue with validating the response.
+        """
         try:
             result = self._get_request(endpoint=f"/issue/{id}")
             return TypeAdapter(Issue).validate_python(result)

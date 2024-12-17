@@ -1,3 +1,9 @@
+"""The Series module.
+
+This module provides the following classes:
+- Series
+"""
+
 __all__ = ["Series"]
 
 import re
@@ -9,25 +15,46 @@ from grayven.schemas import BaseModel
 
 
 class Series(BaseModel):
-    api_url: HttpUrl
-    name: str
-    country: str
-    language: str
+    """Contains fields for all Series.
+
+    Attributes:
+      active_issues:
+      api_url:
+      binding:
+      color:
+      country:
+      dimensions:
+      issue_descriptors:
+      language:
+      name:
+      notes:
+      paper_stock:
+      publisher:
+      publishing_format:
+      year_began:
+      year_ended:
+    """
+
     active_issues: list[HttpUrl]
-    issue_descriptors: list[str]
-    color: str
-    dimensions: str
-    paper_stock: str
+    api_url: HttpUrl
     binding: str
-    publishing_format: str
+    color: str
+    country: str
+    dimensions: str
+    issue_descriptors: list[str]
+    language: str
+    name: str
     notes: str  # or Blank
+    paper_stock: str
+    publisher: HttpUrl
+    publishing_format: str
     year_began: int
     year_ended: Optional[int]
-    publisher: HttpUrl
 
     @property
-    def id(self) -> Optional[int]:
+    def id(self) -> int:
+        """The Series id, extracted from the `api_url`."""
         match = re.search(r"/series/(\d+)/", str(self.api_url))
         if match:
             return int(match.group(1))
-        return None
+        raise ValueError("Unable to get id from url: '%s'", self.api_url)
