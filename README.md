@@ -30,14 +30,14 @@ from grayven.sqlite_cache import SQLiteCache
 
 session = GrandComicsDatabase(cache=SQLiteCache())
 
-# Search for Publisher
-results = session.list_publishers()
-for publisher in results:
-    print(f"{publisher.id} | {publisher.name} - {publisher.url}")
+# Search for Series
+results = session.list_series(name="Green Lantern")
+for series in results:
+    print(f"{series.id} | {series.name} ({series.year_began})")
 
-# Get details for a Series
-result = session.get_series(id=26266)
-print(result.notes)
+# Get an issue's release date
+result = session.get_issue(id=242700)
+print(result.on_sale_date)
 ```
 
 ## Documentation
