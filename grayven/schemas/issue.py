@@ -12,11 +12,12 @@ __all__ = ["BasicIssue", "Issue", "Story", "StoryType"]
 import re
 from datetime import date
 from enum import Enum
-from typing import Optional
+from typing import Annotated, Optional
 
 from pydantic import HttpUrl
+from pydantic.functional_validators import BeforeValidator
 
-from grayven.schemas import BaseModel
+from grayven.schemas import BaseModel, blank_is_none
 
 
 class StoryType(str, Enum):
@@ -54,21 +55,21 @@ class Story(BaseModel):
       type:
     """
 
-    characters: str  # or Blank
-    colors: str  # or Blank
-    editing: str  # or Blank
-    feature: str
-    genre: str  # or Blank
-    inks: str  # or Blank
-    job_number: str  # or Blank
-    letters: str  # or Blank
-    notes: str  # or Blank
+    characters: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    colors: str
+    editing: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    feature: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    genre: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    inks: str
+    job_number: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    letters: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    notes: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     page_count: str
-    pencils: str  # or Blank
-    script: str  # or Blank
+    pencils: str
+    script: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     sequence_number: int
-    synopsis: str
-    title: str  # or Blank
+    synopsis: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    title: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     type: StoryType
 
 
@@ -121,14 +122,14 @@ class Issue(BasicIssue):
       story_set:
     """
 
-    barcode: str  # or Blank
+    barcode: str
     brand: str
     cover: HttpUrl
     editing: str
     indicia_frequency: str
     indicia_publisher: str
-    isbn: str  # or Blank
+    isbn: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     notes: str
     on_sale_date: Optional[date]
-    rating: str  # or Blank
+    rating: str
     story_set: list[Story]

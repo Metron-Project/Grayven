@@ -8,11 +8,12 @@ __all__ = ["Publisher"]
 
 import re
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 from pydantic import HttpUrl
+from pydantic.functional_validators import BeforeValidator
 
-from grayven.schemas import BaseModel
+from grayven.schemas import BaseModel, blank_is_none
 
 
 class Publisher(BaseModel):
@@ -46,9 +47,9 @@ class Publisher(BaseModel):
     issue_count: int
     modified: datetime
     name: str
-    notes: str  # or Blank
+    notes: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     series_count: int
-    url: HttpUrl  # or Blank
+    url: Annotated[Optional[HttpUrl], BeforeValidator(blank_is_none)]
     year_began: Optional[int]
     year_began_uncertain: bool
     year_ended: Optional[int]

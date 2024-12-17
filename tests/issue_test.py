@@ -30,7 +30,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     )
     assert result.indicia_publisher == "DC Comics"
     assert result.brand == "DC [bullet]"
-    assert result.isbn == ""
+    assert result.isbn is None
     assert result.barcode == "76194124438900111"
     assert result.rating == "Approved by the Comics Code Authority"
     assert result.on_sale_date == date(2005, 5, 25)
@@ -39,21 +39,21 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert str(result.series) == "https://www.comics.org/api/series/13519/?format=json"
     assert len(result.story_set) == 4
     assert result.story_set[0].type == StoryType.COVER
-    assert result.story_set[0].title == ""
+    assert result.story_set[0].title is None
     assert result.story_set[0].feature == "Green Lantern"
     assert result.story_set[0].sequence_number == 0
     assert result.story_set[0].page_count == "1.000"
-    assert result.story_set[0].script == ""
+    assert result.story_set[0].script is None
     assert result.story_set[0].pencils == "Carlos Pacheco (credited) (signed as Pacheco [scratch])"
     assert result.story_set[0].inks == "Jesús Merino (credited) (signed as Merino)"
     assert result.story_set[0].colors == "Peter Steigerwald (credited) (signed as Peter S:)"
-    assert result.story_set[0].letters == ""
-    assert result.story_set[0].editing == ""
-    assert result.story_set[0].job_number == ""
+    assert result.story_set[0].letters is None
+    assert result.story_set[0].editing is None
+    assert result.story_set[0].job_number is None
     assert result.story_set[0].genre == "superhero"
     assert result.story_set[0].characters == "Green Lantern [Hal Jordan]"
-    assert result.story_set[0].synopsis == ""
-    assert result.story_set[0].notes == ""
+    assert result.story_set[0].synopsis is None
+    assert result.story_set[0].notes is None
     assert (
         str(result.cover) == "https://files1.comics.org//img/gcd/covers_by_id/224/w400/224124.jpg"
     )

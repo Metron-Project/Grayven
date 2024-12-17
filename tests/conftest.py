@@ -14,4 +14,6 @@ from grayven.sqlite_cache import SQLiteCache
 @pytest.fixture(scope="session")
 def session() -> GrandComicsDatabase:
     """Set the GrandComicsDatabase session fixture."""
-    return GrandComicsDatabase(cache=SQLiteCache(path=Path("tests/cache.sqlite"), expiry=None))
+    return GrandComicsDatabase(
+        cache=SQLiteCache(path=Path("tests/cache.sqlite"), expiry=None), timeout=5
+    )

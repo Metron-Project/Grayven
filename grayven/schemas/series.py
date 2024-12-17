@@ -7,11 +7,12 @@ This module provides the following classes:
 __all__ = ["Series"]
 
 import re
-from typing import Optional
+from typing import Annotated, Optional
 
 from pydantic import HttpUrl
+from pydantic.functional_validators import BeforeValidator
 
-from grayven.schemas import BaseModel
+from grayven.schemas import BaseModel, blank_is_none
 
 
 class Series(BaseModel):
@@ -37,17 +38,17 @@ class Series(BaseModel):
 
     active_issues: list[HttpUrl]
     api_url: HttpUrl
-    binding: str
-    color: str
+    binding: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    color: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     country: str
-    dimensions: str
-    issue_descriptors: list[str]
+    dimensions: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    issue_descriptors: list[Annotated[Optional[str], BeforeValidator(blank_is_none)]]
     language: str
     name: str
-    notes: str  # or Blank
-    paper_stock: str
+    notes: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    paper_stock: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     publisher: HttpUrl
-    publishing_format: str
+    publishing_format: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     year_began: int
     year_ended: Optional[int]
 
