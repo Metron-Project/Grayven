@@ -17,4 +17,3 @@ build:
 
 mkdocs:
   configuration: mkdocs.yaml
-
