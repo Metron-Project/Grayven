@@ -20,19 +20,19 @@ class Publisher(BaseModel):
     """Contains fields for all Publishers.
 
     Attributes:
-      api_url:
-      brand_count:
-      country:
-      indicia_publisher_count:
-      issue_count:
-      modified:
-      name:
-      notes:
-      series_count:
-      url:
-      year_began:
+      api_url: Url to the resource in the GCD API.
+      brand_count: The number of brands associated with the publisher.
+      country: The country where the publisher is based.
+      indicia_publisher_count: The number of indicia publishers associated with the publisher.
+      issue_count: The total number of issues published.
+      modified: The date and time when the publisher's information was last modified.
+      name: The name of the publisher.
+      notes: Additional notes about the publisher.
+      series_count: The number of series published by the publisher.
+      url: Url to the resource in the GCD.
+      year_began: The year the publisher began.
       year_began_uncertain:
-      year_ended:
+      year_ended: The year the publisher ended.
       year_ended_uncertain:
       year_overall_began:
       year_overall_began_uncertain:
@@ -61,8 +61,7 @@ class Publisher(BaseModel):
 
     @property
     def id(self) -> int:
-        """The Publisher id, extracted from the `api_url`."""
-        match = re.search(r"/publisher/(\d+)/", str(self.api_url))
-        if match:
+        """The Publisher id, extracted from the `api_url` field."""
+        if match := re.search(r"/publisher/(\d+)/", str(self.api_url)):
             return int(match.group(1))
         raise ValueError("Unable to get id from url: '%s'", self.api_url)
