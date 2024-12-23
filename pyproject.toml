@@ -9,14 +9,14 @@ dev = [
 docs = [
   "mkdocs >= 1.6.1",
   "mkdocs-include-markdown-plugin >= 7.1.2",
-  "mkdocs-material >= 9.5.48",
+  "mkdocs-material >= 9.5.49",
   "mkdocstrings[python] >= 0.27.0"
 ]
 tests = [
   "pytest >= 8.3.4",
   "pytest-cov >= 6.0.0",
   "tox >= 4.23.2",
-  "tox-uv >= 1.16.1"
+  "tox-uv >= 1.16.2"
 ]
 
 [project]
@@ -42,10 +42,10 @@ classifiers = [
   "Typing :: Typed"
 ]
 dependencies = [
-  "eval-type-backport >= 0.2.0; python_version < '3.10'",
+  "eval-type-backport >= 0.2.2; python_version < '3.10'",
   "httpx >= 0.28.1",
-  "pydantic >= 2.10.3",
-  "ratelimit >= 2.2.1",
+  "pydantic >= 2.10.4",
+  "ratelimit >= 2.2.1"
 ]
 description = "A Python wrapper for the Grand Comics Database API."
 dynamic = ["version"]
@@ -60,8 +60,8 @@ requires-python = ">= 3.9"
 
 [project.urls]
 Homepage = "https://pypi.org/project/Grayven"
-Issues = "https://github.com/Buried-In-Code/Grayven/issues"
-Source = "https://github.com/Buried-In-Code/Grayven"
+Issues = "https://github.com/Metron-Project/Grayven/issues"
+Source = "https://github.com/Metron-Project/Grayven"
 
 [tool.coverage.report]
 show_missing = true

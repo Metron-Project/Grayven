@@ -8,9 +8,9 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-informational?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
 [![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
-[![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Grayven.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Grayven/graphs/contributors)
-[![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Grayven/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Grayven/actions/workflows/testing.yaml)
-[![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Grayven/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Buried-In-Code/Grayven/actions/workflows/publishing.yaml)
+[![Github - Contributors](https://img.shields.io/github/contributors/Metron-Project/Grayven.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Metron-Project/Grayven/graphs/contributors)
+[![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml)
+[![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/publishing.yaml)
 
 [![Read the Docs](https://img.shields.io/readthedocs/grayven?label=Read-the-Docs&logo=Read-the-Docs&style=flat-square)](https://grayven.readthedocs.io/en/stable)
 
@@ -47,7 +47,7 @@ print(result.on_sale_date)
 
 ## Bugs/Requests
 
-Please use the [GitHub issue tracker](https://github.com/Buried-In-Code/Grayven/issues) to submit bugs or request features.
+Please use the [GitHub issue tracker](https://github.com/Metron-Project/Grayven/issues) to submit bugs or request features.
 
 ## Socials
 

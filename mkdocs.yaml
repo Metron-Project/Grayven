@@ -5,8 +5,8 @@ site_author: Jonah Jackson
 
 copyright: MIT
 
-repo_url: https://github.com/Buried-In-Code/Grayven
-repo_name: Buried-In-Code/Grayven
+repo_url: https://github.com/Metron-Project/Grayven
+repo_name: Metron-Project/Grayven
 
 theme:
   name: material
@@ -33,11 +33,11 @@ theme:
 extra:
   social:
     - icon: material/github
-      link: https://github.com/Buried-In-Code
+      link: https://github.com/Metron-Project
     - icon: material/language-python
       link: https://pypi.org/project/Grayven/
     - icon: material/mastodon
-      link: https://fosstodon.org/@BuriedInCode
+      link: https://mastodon.social/@metron
     - icon: simple/matrix
       link: https://matrix.to/#/#metron-general:matrix.org
 
