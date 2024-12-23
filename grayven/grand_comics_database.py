@@ -229,7 +229,7 @@ class GrandComicsDatabase:
         self,
         series_name: str,
         issue_number: int,
-        year: Optional[int] = None,
+        year: Optional[str] = None,
         max_results: int = 500,
     ) -> list[BasicIssue]:
         """Request a list of Issues.
@@ -262,7 +262,7 @@ class GrandComicsDatabase:
             raise ServiceError(err) from err
 
     def get_issue(self, id: int) -> Optional[Issue]:  # noqa: A002
-        """Request a Issue using its id.
+        """Request an Issue using its id.
 
         Args:
           id: The Issue id.
