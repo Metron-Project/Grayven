@@ -11,6 +11,7 @@ __all__ = ["BasicIssue", "Issue", "Story", "StoryType"]
 
 import re
 from datetime import date
+from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Optional
 
@@ -64,7 +65,7 @@ class Story(BaseModel):
     job_number: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     letters: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     notes: Annotated[Optional[str], BeforeValidator(blank_is_none)]
-    page_count: str
+    page_count: Optional[Decimal]
     pencils: str
     script: Annotated[Optional[str], BeforeValidator(blank_is_none)]
     sequence_number: int
@@ -89,7 +90,7 @@ class BasicIssue(BaseModel):
 
     api_url: HttpUrl
     descriptor: str
-    page_count: str
+    page_count: Optional[Decimal]
     price: str
     publication_date: str
     series: HttpUrl
