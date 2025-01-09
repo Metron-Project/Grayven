@@ -7,10 +7,48 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from pytest_httpx import HTTPXMock
 
 from grayven.exceptions import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.schemas.issue import StoryType
+from grayven.schemas.issue import Issue, StoryType
+
+
+@pytest.fixture
+def issue_no_page_json() -> dict[str, any]:
+    """Simple fixture for issue with no page."""
+    return {
+        "api_url": "https://www.comics.org/api/issue/2698986/?format=json",
+        "series_name": "Cruel Kingdom (2025 series)",
+        "descriptor": "1",
+        "publication_date": "January 2025",
+        "price": "4.99 USD",
+        "page_count": None,
+        "editing": "",
+        "indicia_publisher": "Oni-Lion Forge Publishing Group, LLC",
+        "brand": "EC An Entertaining Comic; Oni Press [eye]",
+        "isbn": "",
+        "barcode": "64985600823700111",
+        "rating": "",
+        "on_sale_date": "2025-01-08",
+        "indicia_frequency": "",
+        "notes": "",
+        "variant_of": None,
+        "series": "https://www.comics.org/api/series/219801/?format=json",
+        "story_set": [],
+        "cover": "https://files1.comics.org//img/gcd/covers_by_id/1743/w400/1743127.jpg",
+    }
+
+
+def test_issue_no_page(httpx_mock: HTTPXMock, issue_no_page_json: dict[str, any]) -> None:
+    """Test issue with no page count."""
+    session = GrandComicsDatabase()  # We don't want to cache these results
+    httpx_mock.add_response(json=issue_no_page_json)
+    result = session.get_issue(2698986)
+    assert isinstance(result, Issue)
+    assert result.page_count is None
+    assert result.descriptor == "1"
+    assert result.publication_date == "January 2025"
 
 
 def test_issue(session: GrandComicsDatabase) -> None:
