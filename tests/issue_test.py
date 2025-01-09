@@ -4,6 +4,7 @@ This module contains tests for Issue and BasicIssue objects.
 """
 
 from datetime import date
+from decimal import Decimal
 
 import pytest
 
@@ -23,7 +24,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.publication_date == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
-    assert result.page_count == "48.000"
+    assert result.page_count == Decimal("48")
     assert (
         result.editing
         == "Peter J. Tomasi (credited as  Peter Tomasi) (editor); Harvey Richards (credited) (assistant editor); Dan DiDio (credited) (executive editor); Paul Levitz (credited) (publisher)"  # noqa: E501
@@ -42,7 +43,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.story_set[0].title is None
     assert result.story_set[0].feature == "Green Lantern"
     assert result.story_set[0].sequence_number == 0
-    assert result.story_set[0].page_count == "1.000"
+    assert result.story_set[0].page_count == Decimal("1")
     assert result.story_set[0].script is None
     assert result.story_set[0].pencils == "Carlos Pacheco (credited) (signed as Pacheco [scratch])"
     assert result.story_set[0].inks == "Jesús Merino (credited) (signed as Merino)"
