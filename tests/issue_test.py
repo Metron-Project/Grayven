@@ -116,7 +116,7 @@ def test_list_issues(session: GrandComicsDatabase) -> None:
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.publication_date == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
-    assert result.page_count == "48.000"
+    assert result.page_count == Decimal("48")
     assert result.variant_of is None
     assert str(result.series) == "https://www.comics.org/api/series/13519/?format=json"
 
