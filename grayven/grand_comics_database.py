@@ -29,6 +29,8 @@ class GrandComicsDatabase:
     """Class with functionality to request GCD API endpoints.
 
     Args:
+      email: The user's GCD email address, which is used for authentication.
+      password: The user's GCD password, which is used for authentication.'
       timeout: Set how long requests will wait for a response (in seconds).
       cache: SQLiteCache to use if set.
     """
