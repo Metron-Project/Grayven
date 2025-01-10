@@ -29,17 +29,23 @@ class GrandComicsDatabase:
     """Class with functionality to request GCD API endpoints.
 
     Args:
+      email: The user's GCD email address, which is used for authentication.
+      password: The user's GCD password, which is used for authentication.
       timeout: Set how long requests will wait for a response (in seconds).
       cache: SQLiteCache to use if set.
     """
 
     API_URL = "https://www.comics.org/api"
 
-    def __init__(self, timeout: int = 30, cache: Optional[SQLiteCache] = None):
+    def __init__(
+        self, email: str, password: str, timeout: int = 30, cache: Optional[SQLiteCache] = None
+    ):
         self.headers = {
             "Accept": "application/json",
             "User-Agent": f"Grayven/{__version__}/{platform.system()}: {platform.release()}",
         }
+        self.email = email
+        self.password = password
         self.timeout = timeout
         self.cache = cache
 
@@ -64,7 +70,13 @@ class GrandComicsDatabase:
             params = {}
 
         try:
-            response = get(url, params=params, headers=self.headers, timeout=self.timeout)
+            response = get(
+                url,
+                params=params,
+                headers=self.headers,
+                auth=(self.email, self.password),
+                timeout=self.timeout,
+            )
             response.raise_for_status()
             return response.json()
         except RequestError as err:

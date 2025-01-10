@@ -15,8 +15,8 @@ def test_not_found(session: GrandComicsDatabase) -> None:
         session._get_request(endpoint="/invalid")  # noqa: SLF001
 
 
-def test_timeout() -> None:
+def test_timeout(gcd_email: str, gcd_password: str) -> None:
     """Test a TimeoutError for slow responses."""
-    session = GrandComicsDatabase(timeout=1, cache=None)
+    session = GrandComicsDatabase(gcd_email, gcd_password, timeout=1, cache=None)
     with pytest.raises(ServiceError):
         session.get_publisher(id=1)
