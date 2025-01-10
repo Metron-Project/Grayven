@@ -15,13 +15,13 @@ from grayven.sqlite_cache import SQLiteCache
 @pytest.fixture(scope="session")
 def gcd_email() -> str:
     """Email address for testing."""
-    return os.getenv("GCD_EMAIL")
+    return os.getenv("GCD_EMAIL", "<EMAIL>")
 
 
 @pytest.fixture(scope="session")
 def gcd_password() -> str:
     """Password for testing."""
-    return os.getenv("GCD_PASSWORD")
+    return os.getenv("GCD_PASSWORD", "passwrd")
 
 
 @pytest.fixture(scope="session")
