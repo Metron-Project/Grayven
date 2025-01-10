@@ -35,11 +35,15 @@ class GrandComicsDatabase:
 
     API_URL = "https://www.comics.org/api"
 
-    def __init__(self, timeout: int = 30, cache: Optional[SQLiteCache] = None):
+    def __init__(
+        self, email: str, password: str, timeout: int = 30, cache: Optional[SQLiteCache] = None
+    ):
         self.headers = {
             "Accept": "application/json",
             "User-Agent": f"Grayven/{__version__}/{platform.system()}: {platform.release()}",
         }
+        self.email = email
+        self.password = password
         self.timeout = timeout
         self.cache = cache
 
@@ -64,7 +68,13 @@ class GrandComicsDatabase:
             params = {}
 
         try:
-            response = get(url, params=params, headers=self.headers, timeout=self.timeout)
+            response = get(
+                url,
+                params=params,
+                headers=self.headers,
+                auth=(self.email, self.password),
+                timeout=self.timeout,
+            )
             response.raise_for_status()
             return response.json()
         except RequestError as err:

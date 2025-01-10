@@ -40,9 +40,13 @@ def issue_no_page_json() -> dict[str, any]:
     }
 
 
-def test_issue_no_page(httpx_mock: HTTPXMock, issue_no_page_json: dict[str, any]) -> None:
+def test_issue_no_page(
+    gcd_email: str, gcd_password: str, httpx_mock: HTTPXMock, issue_no_page_json: dict[str, any]
+) -> None:
     """Test issue with no page count."""
-    session = GrandComicsDatabase()  # We don't want to cache these results
+    session = GrandComicsDatabase(
+        email=gcd_email, password=gcd_password
+    )  # We don't want to cache these results
     httpx_mock.add_response(json=issue_no_page_json)
     result = session.get_issue(2698986)
     assert isinstance(result, Issue)
@@ -63,9 +67,10 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.publication_date == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
     assert result.page_count == Decimal("48")
-    assert (
-        result.editing
-        == "Peter J. Tomasi (credited as  Peter Tomasi) (editor); Harvey Richards (credited) (assistant editor); Dan DiDio (credited) (executive editor); Paul Levitz (credited) (publisher)"  # noqa: E501
+    assert result.editing == (
+        "Peter J. Tomasi (credited as  Peter Tomasi) (editor); Harvey Richards "
+        "(credited) (assistant editor); Dan DiDio (credited) (executive editor); "
+        "Paul Levitz (credited) (publisher)"
     )
     assert result.indicia_publisher == "DC Comics"
     assert result.brand == "DC [bullet]"
