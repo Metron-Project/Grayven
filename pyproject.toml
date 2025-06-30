@@ -15,7 +15,7 @@ docs = [
 tests = [
   "pytest >= 8.3.4",
   "pytest-cov >= 6.0.0",
-  "pytest-httpx>=0.35.0",
+  "pytest-httpx >= 0.35.0",
   "tox >= 4.23.2",
   "tox-uv >= 1.16.2"
 ]
