@@ -9,48 +9,47 @@ __all__ = ["Series"]
 import re
 from typing import Annotated, Optional
 
-from pydantic import HttpUrl
-from pydantic.functional_validators import BeforeValidator
+from pydantic import Field, HttpUrl
 
-from grayven.schemas import BaseModel, blank_is_none
+from grayven.schemas import BaseModel
 
 
 class Series(BaseModel):
     """Contains fields for all Series.
 
     Attributes:
-      active_issues: A list of URLs for active issues in the series.
       api_url: Url to the resource in the GCD API.
-      binding: The binding type of the series.
-      color: The color information of the series.
-      country: The country where the series is published.
-      dimensions: The dimensions of the series.
-      issue_descriptors:
-      language: The language of the series.
       name: The name of the series.
-      notes: Additional notes about the series.
+      country: The country where the series is published.
+      language: The language of the series.
+      active_issues: A list of URLs for active issues in the series.
+      issue_descriptors:
+      color: The color information of the series.
+      dimensions: The dimensions of the series.
       paper_stock:
-      publisher: Url to the Publisher of this resource in the GCD API.
+      binding: The binding type of the series.
       publishing_format: The publishing format of the series.
+      notes: Additional notes about the series.
       year_began: The year the series began.
       year_ended: The year the series ended.
+      publisher: Url to the Publisher of this resource in the GCD API.
     """
 
-    active_issues: list[HttpUrl]
     api_url: HttpUrl
-    binding: Annotated[Optional[str], BeforeValidator(blank_is_none)]
-    color: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    name: Annotated[str, Field(max_length=255)]
     country: str
-    dimensions: Annotated[Optional[str], BeforeValidator(blank_is_none)]
-    issue_descriptors: list[Annotated[Optional[str], BeforeValidator(blank_is_none)]]
     language: str
-    name: str
-    notes: Annotated[Optional[str], BeforeValidator(blank_is_none)]
-    paper_stock: Annotated[Optional[str], BeforeValidator(blank_is_none)]
+    active_issues: list[HttpUrl]
+    issue_descriptors: list[str]
+    color: Annotated[str, Field(max_length=255)] = ""
+    dimensions: Annotated[str, Field(max_length=255)] = ""
+    paper_stock: Annotated[str, Field(max_length=255)] = ""
+    binding: Annotated[str, Field(max_length=255)] = ""
+    publishing_format: Annotated[str, Field(max_length=255)] = ""
+    notes: str
+    year_began: Annotated[int, Field(gt=-2147483648, lt=2147483647)]
+    year_ended: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
     publisher: HttpUrl
-    publishing_format: Annotated[Optional[str], BeforeValidator(blank_is_none)]
-    year_began: int
-    year_ended: Optional[int]
 
     @property
     def id(self) -> int:

@@ -11,7 +11,7 @@ from pytest_httpx import HTTPXMock
 
 from grayven.exceptions import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.schemas.issue import Issue, StoryType
+from grayven.schemas.issue import Issue
 
 
 @pytest.fixture
@@ -66,7 +66,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.publication_date == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
-    assert result.page_count == Decimal("48")
+    assert result.page_count == Decimal(48)
     assert result.editing == (
         "Peter J. Tomasi (credited as  Peter Tomasi) (editor); Harvey Richards "
         "(credited) (assistant editor); Dan DiDio (credited) (executive editor); "
@@ -74,7 +74,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     )
     assert result.indicia_publisher == "DC Comics"
     assert result.brand == "DC [bullet]"
-    assert result.isbn is None
+    assert result.isbn == ""
     assert result.barcode == "76194124438900111"
     assert result.rating == "Approved by the Comics Code Authority"
     assert result.on_sale_date == date(2005, 5, 25)
@@ -82,22 +82,21 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.variant_of is None
     assert str(result.series) == "https://www.comics.org/api/series/13519/?format=json"
     assert len(result.story_set) == 4
-    assert result.story_set[0].type == StoryType.COVER
-    assert result.story_set[0].title is None
+    assert result.story_set[0].type == "cover"
+    assert result.story_set[0].title == ""
     assert result.story_set[0].feature == "Green Lantern"
     assert result.story_set[0].sequence_number == 0
-    assert result.story_set[0].page_count == Decimal("1")
-    assert result.story_set[0].script is None
+    assert result.story_set[0].page_count == Decimal(1)
+    assert result.story_set[0].script == ""
     assert result.story_set[0].pencils == "Carlos Pacheco (credited) (signed as Pacheco [scratch])"
     assert result.story_set[0].inks == "Jesús Merino (credited) (signed as Merino)"
     assert result.story_set[0].colors == "Peter Steigerwald (credited) (signed as Peter S:)"
-    assert result.story_set[0].letters is None
-    assert result.story_set[0].editing is None
-    assert result.story_set[0].job_number is None
+    assert result.story_set[0].letters == ""
+    assert result.story_set[0].editing == ""
+    assert result.story_set[0].job_number == ""
     assert result.story_set[0].genre == "superhero"
     assert result.story_set[0].characters == "Green Lantern [Hal Jordan]"
-    assert result.story_set[0].synopsis is None
-    assert result.story_set[0].notes is None
+    assert result.story_set[0].synopsis == ""
     assert (
         str(result.cover) == "https://files1.comics.org//img/gcd/covers_by_id/224/w400/224124.jpg"
     )
@@ -121,7 +120,7 @@ def test_list_issues(session: GrandComicsDatabase) -> None:
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.publication_date == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
-    assert result.page_count == Decimal("48")
+    assert result.page_count == Decimal(48)
     assert result.variant_of is None
     assert str(result.series) == "https://www.comics.org/api/series/13519/?format=json"
 

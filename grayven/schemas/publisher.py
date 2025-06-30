@@ -10,7 +10,7 @@ import re
 from datetime import datetime
 from typing import Annotated, Optional
 
-from pydantic import HttpUrl
+from pydantic import Field, HttpUrl
 from pydantic.functional_validators import BeforeValidator
 
 from grayven.schemas import BaseModel, blank_is_none
@@ -21,43 +21,43 @@ class Publisher(BaseModel):
 
     Attributes:
       api_url: Url to the resource in the GCD API.
-      brand_count: The number of brands associated with the publisher.
       country: The country where the publisher is based.
-      indicia_publisher_count: The number of indicia publishers associated with the publisher.
-      issue_count: The total number of issues published.
       modified: The date and time when the publisher's information was last modified.
       name: The name of the publisher.
-      notes: Additional notes about the publisher.
-      series_count: The number of series published by the publisher.
-      url: Url to the resource in the GCD.
       year_began: The year the publisher began.
-      year_began_uncertain:
       year_ended: The year the publisher ended.
+      year_began_uncertain:
       year_ended_uncertain:
       year_overall_began:
-      year_overall_began_uncertain:
       year_overall_ended:
+      year_overall_began_uncertain:
       year_overall_ended_uncertain:
+      notes: Additional notes about the publisher.
+      url: Url to the resource in the GCD.
+      brand_count: The number of brands associated with the publisher.
+      indicia_publisher_count: The number of indicia publishers associated with the publisher.
+      series_count: The number of series published by the publisher.
+      issue_count: The total number of issues published.
     """
 
     api_url: HttpUrl
-    brand_count: int
     country: str
-    indicia_publisher_count: int
-    issue_count: int
     modified: datetime
-    name: str
-    notes: Annotated[Optional[str], BeforeValidator(blank_is_none)]
-    series_count: int
-    url: Annotated[Optional[HttpUrl], BeforeValidator(blank_is_none)]
-    year_began: Optional[int]
-    year_began_uncertain: bool
-    year_ended: Optional[int]
-    year_ended_uncertain: bool
-    year_overall_began: Optional[int]
-    year_overall_began_uncertain: bool
-    year_overall_ended: Optional[int]
-    year_overall_ended_uncertain: bool
+    name: Annotated[str, Field(max_length=255)]
+    year_began: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_ended: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_began_uncertain: bool = False
+    year_ended_uncertain: bool = False
+    year_overall_began: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_overall_ended: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_overall_began_uncertain: bool = False
+    year_overall_ended_uncertain: bool = False
+    notes: str
+    url: Annotated[Optional[HttpUrl], Field(max_length=255), BeforeValidator(blank_is_none)] = None
+    brand_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0
+    indicia_publisher_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0
+    series_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0
+    issue_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0
 
     @property
     def id(self) -> int:
