@@ -19,9 +19,9 @@ def test_series(session: GrandComicsDatabase) -> None:
     assert result.name == "Green Lantern"
     assert result.country == "us"
     assert result.language == "en"
-    assert len(result.active_issues) == 173
+    assert len(result.active_issues) == 179
     assert str(result.active_issues[0]) == "https://www.comics.org/api/issue/242700/?format=json"
-    assert len(result.issue_descriptors) == 173
+    assert len(result.issue_descriptors) == 179
     assert result.issue_descriptors[0] == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.color == "color"
     assert result.dimensions == "standard Modern Age US"
@@ -51,9 +51,9 @@ def test_list_series(session: GrandComicsDatabase) -> None:
     assert result.name == "Green Lantern"
     assert result.country == "us"
     assert result.language == "en"
-    assert len(result.active_issues) == 173
+    assert len(result.active_issues) == 179
     assert str(result.active_issues[0]) == "https://www.comics.org/api/issue/242700/?format=json"
-    assert len(result.issue_descriptors) == 173
+    assert len(result.issue_descriptors) == 179
     assert result.issue_descriptors[0] == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.color == "color"
     assert result.dimensions == "standard Modern Age US"

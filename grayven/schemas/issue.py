@@ -126,7 +126,8 @@ class Issue(BasicIssue):
     cover: HttpUrl
 
     @property
-    def on_sale_date(self) -> date:
+    def on_sale_date(self) -> Optional[date]:
+        """The Issue onSaleDate, converted to a datetime.date or None."""
         try:
             return date.fromisoformat(self.on_sale_str.strip())
         except ValueError:
