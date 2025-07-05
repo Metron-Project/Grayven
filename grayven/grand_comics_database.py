@@ -4,6 +4,8 @@ This module provides the following classes:
 - GrandComicsDatabase
 """
 
+from __future__ import annotations
+
 __all__ = ["GrandComicsDatabase"]
 
 import platform
@@ -26,10 +28,47 @@ from grayven.sqlite_cache import SQLiteCache
 GCD_MINUTE_RATE: Final[int] = 20  # Let's use this so we don't hammer their server per minute
 GCD_HOUR_RATE: Final[int] = 200
 GCD_DAY_RATE: Final[int] = 2_0000
+SECONDS_PER_HOUR: Final[int] = 3_600
+SECONDS_PER_MINUTE: Final[int] = 60
 
 
 def rate_mapping(*arg: Any, **kwargs: Any) -> tuple[str, int]:
     return "gcd", 1
+
+
+def format_time(seconds: str | float) -> str:
+    """Format seconds into a verbose human-readable time string.
+
+    Args:
+        seconds (int or float): Number of seconds to format
+
+    Returns:
+        str: Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
+    """
+    if isinstance(seconds, str):
+        seconds = int(seconds)
+
+    if seconds < 0:
+        return "0 seconds"
+
+    total_seconds = int(seconds)
+
+    hours = total_seconds // SECONDS_PER_HOUR
+    minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
+    remaining_seconds = total_seconds % SECONDS_PER_MINUTE
+
+    parts = []
+
+    if hours > 0:
+        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+
+    if minutes > 0:
+        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+
+    if remaining_seconds > 0 or not parts:
+        parts.append(f"{remaining_seconds} second{'s' if remaining_seconds != 1 else ''}")
+
+    return ", ".join(parts)
 
 
 class GrandComicsDatabase:
@@ -96,7 +135,7 @@ class GrandComicsDatabase:
             if response.status_code == codes.TOO_MANY_REQUESTS:
                 msg = (
                     "Too Many API Requests: Need to wait for "
-                    f"{response.headers['Retry-After']} seconds."
+                    f"{format_time(response.headers['Retry-After'])} seconds."
                 )
                 raise RateLimitError(msg)
             response.raise_for_status()
