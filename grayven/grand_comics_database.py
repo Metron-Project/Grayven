@@ -45,13 +45,10 @@ def format_time(seconds: str | float) -> str:
     Returns:
         str: Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
     """
-    if isinstance(seconds, str):
-        seconds = int(seconds)
-
-    if seconds < 0:
-        return "0 seconds"
-
     total_seconds = int(seconds)
+
+    if total_seconds < 0:
+        return "0 seconds"
 
     hours = total_seconds // SECONDS_PER_HOUR
     minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
