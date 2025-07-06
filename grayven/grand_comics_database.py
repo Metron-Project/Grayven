@@ -131,8 +131,8 @@ class GrandComicsDatabase:
             # Let's raise a specific error, so programs can display how long before requests resume.
             if response.status_code == codes.TOO_MANY_REQUESTS:
                 msg = (
-                    "Too Many API Requests: Need to wait for "
-                    f"{format_time(response.headers['Retry-After'])} seconds."
+                    "Too Many API Requests: Need to wait "
+                    f"{format_time(response.headers['Retry-After'])}."
                 )
                 raise RateLimitError(msg)
             response.raise_for_status()
