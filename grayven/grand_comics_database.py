@@ -4,13 +4,11 @@ This module provides the following classes:
 - GrandComicsDatabase
 """
 
-from __future__ import annotations
-
 __all__ = ["GrandComicsDatabase"]
 
 import platform
 from json import JSONDecodeError
-from typing import Any, ClassVar, Final, Optional
+from typing import Any, ClassVar, Final, Optional, Union
 from urllib.parse import urlencode
 
 from httpx import HTTPStatusError, RequestError, TimeoutException, codes, get
@@ -36,7 +34,7 @@ def rate_mapping(*arg: Any, **kwargs: Any) -> tuple[str, int]:
     return "gcd", 1
 
 
-def format_time(seconds: str | float) -> str:
+def format_time(seconds: Union[str, float]) -> str:
     """Format seconds into a verbose human-readable time string.
 
     Args:

@@ -96,6 +96,7 @@ ignore = [
   "COM812",
   "D107",
   "EM101",
+  "FA102", # Don't run future-required-type-annotation
   "FBT",
   "PLR2004",
   "TCH",
