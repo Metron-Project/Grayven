@@ -115,6 +115,7 @@ class GrandComicsDatabase:
           Json response from the GCD API.
 
         Raises:
+          RateLimitError: If the API rate limit is exceeded.
           ServiceError: If there is an issue with the request or response from the GCD API.
         """
         if params is None:
