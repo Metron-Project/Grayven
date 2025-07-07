@@ -129,21 +129,20 @@ class GrandComicsDatabase:
                 auth=(self.email, self.password),
                 timeout=self.timeout,
             )
-            # Let's raise a specific error, so programs can display how long before requests resume.
-            if response.status_code == codes.TOO_MANY_REQUESTS:
-                msg = (
-                    "Too Many API Requests: Need to wait "
-                    f"{format_time(response.headers['Retry-After'])}."
-                )
-                raise RateLimitError(msg)
             response.raise_for_status()
             return response.json()
         except RequestError as err:
             raise ServiceError("Unable to connect to '%s'", url) from err
         except HTTPStatusError as err:
             try:
-                if err.response.status_code == 404:
+                if err.response.status_code == codes.NOT_FOUND:
                     raise ServiceError(err.response.json()["detail"])
+                if err.response.status_code == codes.TOO_MANY_REQUESTS:
+                    msg = (
+                        "Too Many API Requests: Need to wait "
+                        f"{format_time(err.response.headers['Retry-After'])}."
+                    )
+                    raise RateLimitError(msg)
                 raise ServiceError(err) from err
             except JSONDecodeError as err:
                 raise ServiceError("Unable to parse response from '%s' as Json", url) from err
