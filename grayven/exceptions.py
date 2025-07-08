@@ -12,4 +12,4 @@ class ServiceError(Exception):
 
 
 class RateLimitError(Exception):
-    """Class for any API errors."""
+    """Class for any API Rate Limit errors."""
