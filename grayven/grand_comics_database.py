@@ -8,21 +8,62 @@ __all__ = ["GrandComicsDatabase"]
 
 import platform
 from json import JSONDecodeError
-from typing import Any, Optional
+from typing import Any, ClassVar, Final, Optional, Union
 from urllib.parse import urlencode
 
-from httpx import HTTPStatusError, RequestError, TimeoutException, get
+from httpx import HTTPStatusError, RequestError, TimeoutException, codes, get
 from pydantic import TypeAdapter, ValidationError
-from ratelimit import limits, sleep_and_retry
+from pyrate_limiter import Duration, Limiter, Rate, SQLiteBucket
 
 from grayven import __version__
-from grayven.exceptions import ServiceError
+from grayven.exceptions import RateLimitError, ServiceError
 from grayven.schemas.issue import BasicIssue, Issue
 from grayven.schemas.publisher import Publisher
 from grayven.schemas.series import Series
 from grayven.sqlite_cache import SQLiteCache
 
-MINUTE = 60
+# Constants
+GCD_MINUTE_RATE: Final[int] = 20  # Let's use this so we don't hammer their server per minute
+GCD_HOUR_RATE: Final[int] = 200
+GCD_DAY_RATE: Final[int] = 2_0000
+SECONDS_PER_HOUR: Final[int] = 3_600
+SECONDS_PER_MINUTE: Final[int] = 60
+
+
+def rate_mapping(*arg: Any, **kwargs: Any) -> tuple[str, int]:
+    return "gcd", 1
+
+
+def format_time(seconds: Union[str, float]) -> str:
+    """Format seconds into a verbose human-readable time string.
+
+    Args:
+        seconds (int or float): Number of seconds to format
+
+    Returns:
+        str: Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
+    """
+    total_seconds = int(seconds)
+
+    if total_seconds < 0:
+        return "0 seconds"
+
+    hours = total_seconds // SECONDS_PER_HOUR
+    minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
+    remaining_seconds = total_seconds % SECONDS_PER_MINUTE
+
+    parts = []
+
+    if hours > 0:
+        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+
+    if minutes > 0:
+        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+
+    if remaining_seconds > 0 or not parts:
+        parts.append(f"{remaining_seconds} second{'s' if remaining_seconds != 1 else ''}")
+
+    return ", ".join(parts)
 
 
 class GrandComicsDatabase:
@@ -37,6 +78,15 @@ class GrandComicsDatabase:
 
     API_URL = "https://www.comics.org/api"
 
+    _minute_rate = Rate(GCD_MINUTE_RATE, Duration.MINUTE)
+    _hour_rate = Rate(GCD_HOUR_RATE, Duration.HOUR)
+    _daily_rate = Rate(GCD_DAY_RATE, Duration.DAY)
+    _rates: ClassVar[list[Rate]] = [_minute_rate, _hour_rate, _daily_rate]
+    _bucket = SQLiteBucket.init_from_file(_rates)  # Save between sessions
+    # Can a `BucketFullException` be raised when used as a decorator?
+    _limiter = Limiter(_bucket, raise_when_fail=False, max_delay=Duration.DAY)
+    decorator = _limiter.as_decorator()
+
     def __init__(
         self, email: str, password: str, timeout: int = 30, cache: Optional[SQLiteCache] = None
     ):
@@ -49,8 +99,7 @@ class GrandComicsDatabase:
         self.timeout = timeout
         self.cache = cache
 
-    @sleep_and_retry
-    @limits(calls=20, period=MINUTE)
+    @decorator(rate_mapping)
     def _perform_get_request(
         self, url: str, params: Optional[dict[str, str]] = None
     ) -> dict[str, Any]:
@@ -64,6 +113,7 @@ class GrandComicsDatabase:
           Json response from the GCD API.
 
         Raises:
+          RateLimitError: If the API rate limit is exceeded.
           ServiceError: If there is an issue with the request or response from the GCD API.
         """
         if params is None:
@@ -83,8 +133,14 @@ class GrandComicsDatabase:
             raise ServiceError("Unable to connect to '%s'", url) from err
         except HTTPStatusError as err:
             try:
-                if err.response.status_code == 404:
+                if err.response.status_code == codes.NOT_FOUND:
                     raise ServiceError(err.response.json()["detail"])
+                if err.response.status_code == codes.TOO_MANY_REQUESTS:
+                    msg = (
+                        "Too Many API Requests: Need to wait "
+                        f"{format_time(err.response.headers['Retry-After'])}."
+                    )
+                    raise RateLimitError(msg)
                 raise ServiceError(err) from err
             except JSONDecodeError as err:
                 raise ServiceError("Unable to parse response from '%s' as Json", url) from err
