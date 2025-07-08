@@ -6,8 +6,6 @@ This module provides the following classes:
 - Story
 """
 
-from __future__ import annotations
-
 __all__ = ["BasicIssue", "Issue", "Story"]
 
 import re
@@ -128,12 +126,7 @@ class Issue(BasicIssue):
     cover: HttpUrl
 
     @property
-    def on_sale_date(self) -> date | None:
-        """Returns the on-sale date as a date object if possible.
-
-        Attempts to parse the on-sale date string and return it as a date object. If parsing
-        fails, returns None.
-        """
+    def on_sale_date(self) -> date:
         try:
             return date.fromisoformat(self.on_sale_str.strip())
         except ValueError:
