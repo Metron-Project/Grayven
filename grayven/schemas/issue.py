@@ -14,8 +14,9 @@ from decimal import Decimal
 from typing import Annotated, Optional
 
 from pydantic import Field, HttpUrl
+from pydantic.functional_validators import BeforeValidator
 
-from grayven.schemas import BaseModel
+from grayven.schemas import BaseModel, blank_is_none
 
 
 class Story(BaseModel):
@@ -115,7 +116,7 @@ class Issue(BasicIssue):
 
     editing: str
     indicia_publisher: str
-    brand: str
+    brand: Optional[str]
     isbn: Annotated[str, Field(max_length=32)]
     barcode: Annotated[str, Field(max_length=38)]
     rating: Annotated[str, Field(max_length=255)] = ""
@@ -123,7 +124,7 @@ class Issue(BasicIssue):
     indicia_frequency: Annotated[str, Field(max_length=255)]
     notes: str
     story_set: list[Story]
-    cover: HttpUrl
+    cover: Annotated[Optional[HttpUrl], BeforeValidator(blank_is_none)]
 
     @property
     def on_sale_date(self) -> date:
