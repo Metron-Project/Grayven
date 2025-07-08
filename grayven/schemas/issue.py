@@ -127,7 +127,12 @@ class Issue(BasicIssue):
     cover: Annotated[Optional[HttpUrl], BeforeValidator(blank_is_none)]
 
     @property
-    def on_sale_date(self) -> date:
+    def on_sale_date(self) -> Optional[date]:
+        """Returns the on-sale date as a date object if possible.
+
+        Attempts to parse the on-sale date string and return it as a date object. If parsing
+        fails, returns None.
+        """
         try:
             return date.fromisoformat(self.on_sale_str.strip())
         except ValueError:
