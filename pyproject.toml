@@ -129,13 +129,13 @@ keep-runtime-typing = true
 
 [tool.tomlsort]
 all = true
-overrides."tool.tox.env.test.commands".inline_arrays = false
 overrides."tool.tox.env_list".inline_arrays = false
+overrides."tool.tox.env_run_base.commands".inline_arrays = false
 
 [tool.tox]
 env_list = ["3.9", "3.10", "3.11", "3.12", "3.13"]
 min_version = "4.22"
 
-[tool.tox.env.test]
-commands = [["python --version"], ["pytest"]]
+[tool.tox.env_run_base]
+commands = [["pytest"]]
 dependency_groups = ["tests"]

@@ -135,3 +135,17 @@ def test_list_issue_invalid_number(session: GrandComicsDatabase) -> None:
     """Test using the list_issues endpoint with an invalid issue_number."""
     results = session.list_issues(series_name="Green Lantern", issue_number=-1)
     assert len(results) == 0
+
+
+def test_no_brand(session: GrandComicsDatabase) -> None:
+    """Test get_issue when there is no brand."""
+    result = session.get_issue(id=2746350)
+    assert result is not None
+    assert result.brand is None
+
+
+def test_no_cover_url(session: GrandComicsDatabase) -> None:
+    """Test get_issue when cover returns a blank str instead of a url."""
+    result = session.get_issue(id=2746350)
+    assert result is not None
+    assert result.cover is None
