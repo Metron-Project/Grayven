@@ -28,7 +28,11 @@ pip install --user Grayven
 from grayven.grand_comics_database import GrandComicsDatabase
 from grayven.sqlite_cache import SQLiteCache
 
-session = GrandComicsDatabase(cache=SQLiteCache())
+session = GrandComicsDatabase(
+    email="email@example.com",
+    password="password",
+    cache=SQLiteCache()
+)
 
 # Search for Series
 results = session.list_series(name="Green Lantern")
@@ -48,6 +52,11 @@ print(result.on_sale_date)
 ## Bugs/Requests
 
 Please use the [GitHub issue tracker](https://github.com/Metron-Project/Grayven/issues) to submit bugs or request features.
+
+## Contributing
+
+- When running a new test for the first time, set the environment variables `GCD_EMAIL` to your GCD email address and `GCD_PASSWORD` to your GCD password.
+  The responses will be cached in the `tests/cache.sqlite` database without your credentials.
 
 ## Socials
 
