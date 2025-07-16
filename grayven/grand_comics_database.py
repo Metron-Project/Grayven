@@ -174,12 +174,12 @@ class GrandComicsDatabase:
         cache_key = url + cache_params
 
         if self.cache and not skip_cache:
-            cached_response = self.cache.select(key=cache_key)
+            cached_response = self.cache.select(query=cache_key)
             if cached_response:
                 return cached_response
         response = self._perform_get_request(url=url, params=params)
         if self.cache and not skip_cache:
-            self.cache.insert(key=cache_key, value=response)
+            self.cache.insert(query=cache_key, response=response)
         return response
 
     def _get_paged_request(
