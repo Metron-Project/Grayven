@@ -1,7 +1,7 @@
 """grayven package entry file."""
 
 __all__ = ["__version__", "get_cache_root"]
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 import os
 from pathlib import Path
