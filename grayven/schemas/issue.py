@@ -11,7 +11,7 @@ __all__ = ["BasicIssue", "Issue", "Story"]
 import re
 from datetime import date
 from decimal import Decimal
-from typing import Annotated, Optional
+from typing import Annotated
 
 from pydantic import Field, HttpUrl
 from pydantic.functional_validators import BeforeValidator
@@ -45,7 +45,7 @@ class Story(BaseModel):
     title: Annotated[str, Field(max_length=255)]
     feature: str
     sequence_number: Annotated[int, Field(gt=-2147483648, lt=2147483647)]
-    page_count: Optional[Decimal] = None
+    page_count: Decimal | None = None
     script: str
     pencils: str
     inks: str
@@ -78,8 +78,8 @@ class BasicIssue(BaseModel):
     descriptor: str
     publication_date: Annotated[str, Field(max_length=255)]
     price: Annotated[str, Field(max_length=255)]
-    page_count: Optional[Decimal] = None
-    variant_of: Optional[HttpUrl] = None
+    page_count: Decimal | None = None
+    variant_of: HttpUrl | None = None
     series: HttpUrl
 
     @property
@@ -116,7 +116,7 @@ class Issue(BasicIssue):
 
     editing: str
     indicia_publisher: str
-    brand: Optional[str]
+    brand: str | None
     isbn: Annotated[str, Field(max_length=32)]
     barcode: Annotated[str, Field(max_length=38)]
     rating: Annotated[str, Field(max_length=255)] = ""
@@ -124,10 +124,10 @@ class Issue(BasicIssue):
     indicia_frequency: Annotated[str, Field(max_length=255)]
     notes: str
     story_set: list[Story]
-    cover: Annotated[Optional[HttpUrl], BeforeValidator(blank_is_none)]
+    cover: Annotated[HttpUrl | None, BeforeValidator(blank_is_none)]
 
     @property
-    def on_sale_date(self) -> Optional[date]:
+    def on_sale_date(self) -> date | None:
         """Returns the on-sale date as a date object if possible.
 
         Attempts to parse the on-sale date string and return it as a date object. If parsing

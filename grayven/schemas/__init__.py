@@ -6,8 +6,6 @@ This module provides the following classes:
 
 __all__ = ["BaseModel", "blank_is_none"]
 
-from typing import Optional
-
 from pydantic import BaseModel as PydanticModel
 
 
@@ -22,6 +20,6 @@ class BaseModel(
     """Base model for Grayven resources."""
 
 
-def blank_is_none(value: str) -> Optional[str]:
+def blank_is_none(value: str) -> str | None:
     """Enforces blank strings to be None."""
     return value if value else None

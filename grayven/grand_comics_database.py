@@ -8,7 +8,7 @@ __all__ = ["GrandComicsDatabase"]
 
 import platform
 from json import JSONDecodeError
-from typing import Any, ClassVar, Final, Optional, Union
+from typing import Any, ClassVar, Final
 from urllib.parse import urlencode
 
 from httpx import HTTPStatusError, RequestError, TimeoutException, codes, get
@@ -34,7 +34,7 @@ def rate_mapping(*arg: Any, **kwargs: Any) -> tuple[str, int]:
     return "gcd", 1
 
 
-def format_time(seconds: Union[str, float]) -> str:
+def format_time(seconds: str | float) -> str:
     """Format seconds into a verbose human-readable time string.
 
     Args:
@@ -88,7 +88,7 @@ class GrandComicsDatabase:
     decorator = _limiter.as_decorator()
 
     def __init__(
-        self, email: str, password: str, timeout: int = 30, cache: Optional[SQLiteCache] = None
+        self, email: str, password: str, timeout: int = 30, cache: SQLiteCache | None = None
     ):
         self.headers = {
             "Accept": "application/json",
@@ -101,7 +101,7 @@ class GrandComicsDatabase:
 
     @decorator(rate_mapping)
     def _perform_get_request(
-        self, url: str, params: Optional[dict[str, str]] = None
+        self, url: str, params: dict[str, str] | None = None
     ) -> dict[str, Any]:
         """Make GET request to GCD API endpoint.
 
@@ -150,7 +150,7 @@ class GrandComicsDatabase:
             raise ServiceError("Service took too long to respond") from err
 
     def _get_request(
-        self, endpoint: str, params: Optional[dict[str, str]] = None, skip_cache: bool = False
+        self, endpoint: str, params: dict[str, str] | None = None, skip_cache: bool = False
     ) -> dict[str, Any]:
         """Check cache or make GET request to GCD API endpoint.
 
@@ -183,7 +183,7 @@ class GrandComicsDatabase:
         return response
 
     def _get_paged_request(
-        self, endpoint: str, params: Optional[dict[str, str]] = None, max_results: int = 500
+        self, endpoint: str, params: dict[str, str] | None = None, max_results: int = 500
     ) -> list[dict[str, Any]]:
         """Get results from paged requests.
 
@@ -197,13 +197,13 @@ class GrandComicsDatabase:
         """
         if params is None:
             params = {}
-        params["page"] = 1
+        params["page"] = str(1)
         response = self._get_request(endpoint=endpoint, params=params)
         results = response["results"]
         while (
             response["results"] and len(results) < response["count"] and len(results) < max_results
         ):
-            params["page"] += 1
+            params["page"] = str(int(params["page"]) + 1)
             response = self._get_request(endpoint=endpoint, params=params)
             results.extend(response["results"])
         return results[:max_results]
@@ -226,7 +226,7 @@ class GrandComicsDatabase:
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_publisher(self, id: int) -> Optional[Publisher]:  # noqa: A002
+    def get_publisher(self, id: int) -> Publisher | None:  # noqa: A002
         """Request a Publisher using its id.
 
         Args:
@@ -245,7 +245,7 @@ class GrandComicsDatabase:
             raise ServiceError(err) from err
 
     def list_series(
-        self, name: Optional[str] = None, year: Optional[int] = None, max_results: int = 500
+        self, name: str | None = None, year: int | None = None, max_results: int = 500
     ) -> list[Series]:
         """Request a list of Series.
 
@@ -275,7 +275,7 @@ class GrandComicsDatabase:
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_series(self, id: int) -> Optional[Series]:  # noqa: A002
+    def get_series(self, id: int) -> Series | None:  # noqa: A002
         """Request a Series using its id.
 
         Args:
@@ -294,11 +294,7 @@ class GrandComicsDatabase:
             raise ServiceError(err) from err
 
     def list_issues(
-        self,
-        series_name: str,
-        issue_number: int,
-        year: Optional[str] = None,
-        max_results: int = 500,
+        self, series_name: str, issue_number: int, year: str | None = None, max_results: int = 500
     ) -> list[BasicIssue]:
         """Request a list of Issues.
 
@@ -329,7 +325,7 @@ class GrandComicsDatabase:
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_issue(self, id: int) -> Optional[Issue]:  # noqa: A002
+    def get_issue(self, id: int) -> Issue | None:  # noqa: A002
         """Request an Issue using its id.
 
         Args:
