@@ -8,7 +8,7 @@ __all__ = ["Publisher"]
 
 import re
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated
 
 from pydantic import Field, HttpUrl
 from pydantic.functional_validators import BeforeValidator
@@ -44,16 +44,16 @@ class Publisher(BaseModel):
     country: str
     modified: datetime
     name: Annotated[str, Field(max_length=255)]
-    year_began: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
-    year_ended: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_began: Annotated[int | None, Field(gt=-2147483648, lt=2147483647)] = None
+    year_ended: Annotated[int | None, Field(gt=-2147483648, lt=2147483647)] = None
     year_began_uncertain: bool = False
     year_ended_uncertain: bool = False
-    year_overall_began: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
-    year_overall_ended: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_overall_began: Annotated[int | None, Field(gt=-2147483648, lt=2147483647)] = None
+    year_overall_ended: Annotated[int | None, Field(gt=-2147483648, lt=2147483647)] = None
     year_overall_began_uncertain: bool = False
     year_overall_ended_uncertain: bool = False
     notes: str
-    url: Annotated[Optional[HttpUrl], Field(max_length=255), BeforeValidator(blank_is_none)] = None
+    url: Annotated[HttpUrl | None, Field(max_length=255), BeforeValidator(blank_is_none)] = None
     brand_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0
     indicia_publisher_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0
     series_count: Annotated[int, Field(gt=-2147483648, lt=2147483647)] = 0

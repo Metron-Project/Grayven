@@ -4,20 +4,20 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.2.0"
+  "pre-commit >= 4.3.0"
 ]
 docs = [
   "mkdocs >= 1.6.0",
-  "mkdocs-include-markdown-plugin >= 7.1.0",
+  "mkdocs-include-markdown-plugin >= 7.2.0",
   "mkdocs-material >= 9.6.0",
-  "mkdocstrings[python] >= 0.29.0"
+  "mkdocstrings[python] >= 0.30.0"
 ]
 tests = [
   "pytest >= 8.4.0",
-  "pytest-cov >= 6.2.0",
+  "pytest-cov >= 7.0.0",
   "pytest-httpx >= 0.35.0",
-  "tox >= 4.28.0",
-  "tox-uv >= 1.26.0"
+  "tox >= 4.30.0",
+  "tox-uv >= 1.28.0"
 ]
 
 [project]
@@ -37,16 +37,15 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python",
   "Topic :: Internet",
   "Typing :: Typed"
 ]
 dependencies = [
-  "eval-type-backport >= 0.2.0; python_version < '3.10'",
   "httpx >= 0.28.0",
-  "pydantic >= 2.11.0",
-  "pyrate-limiter >= 3.8.0"
+  "pydantic >= 2.12.0",
+  "pyrate-limiter >= 3.9.0"
 ]
 description = "A Python wrapper for the Grand Comics Database API."
 dynamic = ["version"]
@@ -57,7 +56,7 @@ maintainers = [
 ]
 name = "Grayven"
 readme = "README.md"
-requires-python = ">= 3.9"
+requires-python = ">= 3.10"
 
 [project.urls]
 Homepage = "https://pypi.org/project/Grayven"
@@ -133,7 +132,7 @@ overrides."tool.tox.env_list".inline_arrays = false
 overrides."tool.tox.env_run_base.commands".inline_arrays = false
 
 [tool.tox]
-env_list = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+env_list = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 min_version = "4.22"
 
 [tool.tox.env_run_base]

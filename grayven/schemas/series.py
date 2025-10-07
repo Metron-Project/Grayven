@@ -7,7 +7,7 @@ This module provides the following classes:
 __all__ = ["Series"]
 
 import re
-from typing import Annotated, Optional
+from typing import Annotated
 
 from pydantic import Field, HttpUrl
 
@@ -48,7 +48,7 @@ class Series(BaseModel):
     publishing_format: Annotated[str, Field(max_length=255)] = ""
     notes: str
     year_began: Annotated[int, Field(gt=-2147483648, lt=2147483647)]
-    year_ended: Annotated[Optional[int], Field(gt=-2147483648, lt=2147483647)] = None
+    year_ended: Annotated[int | None, Field(gt=-2147483648, lt=2147483647)] = None
     publisher: HttpUrl
 
     @property
