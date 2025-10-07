@@ -74,5 +74,5 @@ def test_list_series_empty(session: GrandComicsDatabase) -> None:
 
 def test_list_series_without_year(session: GrandComicsDatabase) -> None:
     """Test using the list_series endpoint without passing a year."""
-    results = session.list_series(year=2005)
-    assert len(results) >= 500
+    results = session.list_series(name="Green Lantern")
+    assert len(results) >= 300

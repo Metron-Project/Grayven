@@ -11,7 +11,7 @@ from json import JSONDecodeError
 from typing import Any, ClassVar, Final
 from urllib.parse import urlencode
 
-from httpx import HTTPStatusError, RequestError, TimeoutException, codes, get
+from httpx import Client, HTTPStatusError, RequestError, TimeoutException, codes
 from pydantic import TypeAdapter, ValidationError
 from pyrate_limiter import Duration, Limiter, Rate, SQLiteBucket
 
@@ -70,13 +70,8 @@ class GrandComicsDatabase:
     """Class with functionality to request GCD API endpoints.
 
     Args:
-      email: The user's GCD email address, which is used for authentication.
-      password: The user's GCD password, which is used for authentication.
-      timeout: Set how long requests will wait for a response (in seconds).
       cache: SQLiteCache to use if set.
     """
-
-    API_URL = "https://www.comics.org/api"
 
     _minute_rate = Rate(GCD_MINUTE_RATE, Duration.MINUTE)
     _hour_rate = Rate(GCD_HOUR_RATE, Duration.HOUR)
@@ -90,23 +85,25 @@ class GrandComicsDatabase:
     def __init__(
         self, email: str, password: str, timeout: int = 30, cache: SQLiteCache | None = None
     ):
-        self.headers = {
-            "Accept": "application/json",
-            "User-Agent": f"Grayven/{__version__}/{platform.system()}: {platform.release()}",
-        }
-        self.email = email
-        self.password = password
-        self.timeout = timeout
+        self._client = Client(
+            base_url="https://www.comics.org/api",
+            headers={
+                "Accept": "application/json",
+                "User-Agent": f"Grayven/{__version__}/{platform.system()}: {platform.release()}",
+            },
+            auth=(email, password),
+            timeout=timeout,
+        )
         self.cache = cache
 
     @decorator(rate_mapping)
     def _perform_get_request(
-        self, url: str, params: dict[str, str] | None = None
+        self, endpoint: str, params: dict[str, str] | None = None
     ) -> dict[str, Any]:
         """Make GET request to GCD API endpoint.
 
         Args:
-          url: The url to request information from.
+          endpoint: The endpoint to request information from.
           params: Parameters to add to the request.
 
         Returns:
@@ -120,32 +117,23 @@ class GrandComicsDatabase:
             params = {}
 
         try:
-            response = get(
-                url,
-                params=params,
-                headers=self.headers,
-                auth=(self.email, self.password),
-                timeout=self.timeout,
-            )
+            response = self._client.get(endpoint, params=params)
             response.raise_for_status()
             return response.json()
         except RequestError as err:
-            raise ServiceError("Unable to connect to '%s'", url) from err
+            raise ServiceError("Unable to connect to '%s'", err.request.url.path) from err
         except HTTPStatusError as err:
             try:
                 if err.response.status_code == codes.NOT_FOUND:
                     raise ServiceError(err.response.json()["detail"])
                 if err.response.status_code == codes.TOO_MANY_REQUESTS:
-                    msg = (
-                        "Too Many API Requests: Need to wait "
-                        f"{format_time(err.response.headers['Retry-After'])}."
-                    )
-                    raise RateLimitError(msg)
+                    period = format_time(err.response.headers["Retry-After"])
+                    raise RateLimitError("Too Many API Requests: Need to wait %s.", period)
                 raise ServiceError(err) from err
             except JSONDecodeError as err:
-                raise ServiceError("Unable to parse response from '%s' as Json", url) from err
+                raise ServiceError("Unable to parse response as Json") from err
         except JSONDecodeError as err:
-            raise ServiceError("Unable to parse response from '%s' as Json", url) from err
+            raise ServiceError("Unable to parse response from as Json") from err
         except TimeoutException as err:
             raise ServiceError("Service took too long to respond") from err
 
@@ -169,15 +157,15 @@ class GrandComicsDatabase:
             params = {}
         params["format"] = "json"
 
-        url = self.API_URL + endpoint + "/"
+        endpoint += "/"
         cache_params = f"?{urlencode({k: params[k] for k in sorted(params)})}"
-        cache_key = url + cache_params
+        cache_key = endpoint + cache_params
 
         if self.cache and not skip_cache:
             cached_response = self.cache.select(query=cache_key)
             if cached_response:
                 return cached_response
-        response = self._perform_get_request(url=url, params=params)
+        response = self._perform_get_request(endpoint=endpoint, params=params)
         if self.cache and not skip_cache:
             self.cache.insert(query=cache_key, response=response)
         return response
