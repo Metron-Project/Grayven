@@ -26,7 +26,7 @@ pip install Grayven
 
 ```python
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.cache import SQLiteCache
+from grayven.sqlite_cache import SQLiteCache
 
 session = GrandComicsDatabase(email="email@example.com", password="password", cache=SQLiteCache())
 
