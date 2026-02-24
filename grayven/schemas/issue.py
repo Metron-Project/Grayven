@@ -6,7 +6,7 @@ This module provides the following classes:
 - Story
 """
 
-__all__ = ["BasicIssue", "Issue", "Story"]
+__all__ = ["BasicIssue", "Issue"]
 
 import re
 from datetime import date
@@ -16,7 +16,7 @@ from typing import Annotated
 from pydantic import Field, HttpUrl
 from pydantic.functional_validators import BeforeValidator
 
-from grayven.schemas import BaseModel, blank_is_none
+from grayven.schemas._base import BaseModel, blank_is_none
 
 
 class Story(BaseModel):

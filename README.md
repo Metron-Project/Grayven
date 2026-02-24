@@ -18,15 +18,15 @@ A [Python](https://www.python.org/) wrapper for the [Grand Comics Database API](
 
 ## Installation
 
-```console
-pip install --user Grayven
+```sh
+pip install Grayven
 ```
 
 ### Example Usage
 
 ```python
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.sqlite_cache import SQLiteCache
+from grayven.cache import SQLiteCache
 
 session = GrandComicsDatabase(
     email="email@example.com",

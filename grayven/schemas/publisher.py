@@ -13,7 +13,7 @@ from typing import Annotated
 from pydantic import Field, HttpUrl
 from pydantic.functional_validators import BeforeValidator
 
-from grayven.schemas import BaseModel, blank_is_none
+from grayven.schemas._base import BaseModel, blank_is_none
 
 
 class Publisher(BaseModel):

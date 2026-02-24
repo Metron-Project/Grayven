@@ -11,7 +11,7 @@ from typing import Annotated
 
 from pydantic import Field, HttpUrl
 
-from grayven.schemas import BaseModel
+from grayven.schemas._base import BaseModel
 
 
 class Series(BaseModel):
