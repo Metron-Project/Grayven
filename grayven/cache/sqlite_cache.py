@@ -94,7 +94,7 @@ class SQLiteCache:
         """Remove entry from the cache with the provided url.
 
         Args:
-          query: Url string used as key.
+            query: Url string used as key.
         """
         with self._connect() as conn:
             conn.execute("DELETE FROM cache WHERE query = ?;", (query,))

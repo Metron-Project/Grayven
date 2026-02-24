@@ -8,9 +8,9 @@ from freezegun.api import FrozenDateTimeFactory
 from pyrate_limiter import Duration, InMemoryBucket, Limiter, Rate
 from pytest_httpx import HTTPXMock
 
-from grayven.exceptions import RateLimitError
+from grayven.cache import SQLiteCache
+from grayven.errors import RateLimitError
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.sqlite_cache import SQLiteCache
 
 SLEEP_TARGET: Final[str] = "pyrate_limiter.limiter.sleep"
 TEST_ENDPOINT: Final[str] = "/rate-limited/"
