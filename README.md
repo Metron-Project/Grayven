@@ -28,11 +28,7 @@ pip install Grayven
 from grayven.grand_comics_database import GrandComicsDatabase
 from grayven.cache import SQLiteCache
 
-session = GrandComicsDatabase(
-    email="email@example.com",
-    password="password",
-    cache=SQLiteCache()
-)
+session = GrandComicsDatabase(email="email@example.com", password="password", cache=SQLiteCache())
 
 # Search for Series
 results = session.list_series(name="Green Lantern")

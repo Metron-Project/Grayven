@@ -18,15 +18,15 @@ from pyrate_limiter import AbstractBucket, Duration, Limiter, Rate, SQLiteBucket
 from pyrate_limiter.extras.httpx_limiter import RateLimiterTransport
 
 from grayven import __version__
-from grayven.cache import SQLiteCache
 from grayven.exceptions import AuthenticationError, RateLimitError, ServiceError
 from grayven.schemas import BasicIssue, Issue, Publisher, Series
+from grayven.sqlite_cache import SQLiteCache
 
 # Constants
 LOGGER = logging.getLogger(__name__)
 SECONDS_PER_MINUTE: Final[int] = 60
 SECONDS_PER_HOUR: Final[int] = 3_600
-RATELIMIT_BUCKET: Final[AbstractBucket] = SQLiteBucket.from_file(
+RATELIMIT_BUCKET: Final[AbstractBucket] = SQLiteBucket.init_from_file(
     [Rate(20, Duration.MINUTE), Rate(200, Duration.HOUR), Rate(2_000, Duration.DAY)]
 )
 
@@ -35,10 +35,10 @@ def format_time(seconds: str | float) -> str:
     """Format seconds into a verbose human-readable time string.
 
     Args:
-        seconds (int or float): Number of seconds to format
+        seconds: Number of seconds to format
 
     Returns:
-        str: Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
+        Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
     """
     total_seconds = int(seconds)
 
@@ -67,17 +67,20 @@ class GrandComicsDatabase:
     """Class with functionality to request GCD API endpoints.
 
     Args:
-      email: The user's GCD email address, which is used for authentication.
-      password: The user's GCD password, which is used for authentication.
-      timeout: Set how long requests will wait for a response (in seconds).
-      cache: SQLiteCache to use if set.
+        email: The user's GCD email address, which is used for authentication.
+        password: The user's GCD password, which is used for authentication.
+        cache: SQLiteCache to use if set.
+        base_url: Root URL of the GCD API.
+        user_agent: Value sent in the `User-Agent` request header.
+        timeout: Set how long requests will wait for a response (in seconds).
+        limiter: Set a custom limiter, used for testing.
     """
 
     def __init__(
         self,
         email: str,
         password: str,
-        cache: SQLiteCache,
+        cache: SQLiteCache | None,
         base_url: str = "https://www.comics.org/api",
         user_agent: str = f"Grayven/{__version__} ({platform.system()}: {platform.release()}; Python v{platform.python_version()})",  # noqa: E501
         timeout: float = 30,
@@ -96,19 +99,6 @@ class GrandComicsDatabase:
     def _perform_get_request(
         self, endpoint: str, params: dict[str, str] | None = None
     ) -> dict[str, Any]:
-        """Make GET request to GCD API endpoint.
-
-        Args:
-          url: The url to request information from.
-          params: Parameters to add to the request.
-
-        Returns:
-          Json response from the GCD API.
-
-        Raises:
-          RateLimitError: If the API rate limit is exceeded.
-          ServiceError: If there is an issue with the request or response from the GCD API.
-        """
         params: dict[str, str] = params or {}
 
         try:
@@ -140,37 +130,26 @@ class GrandComicsDatabase:
             raise ServiceError("Service took too long to respond") from err
 
     def _get_request(self, endpoint: str, params: dict[str, str] | None = None) -> dict[str, Any]:
-        """Check cache or make GET request to GCD API endpoint.
-
-        Args:
-          endpoint: The endpoint to request information from.
-          params: Parameters to add to the request.
-          skip_cache: Skip reading and writing to cache.
-
-        Returns:
-          Json response from the GCD API.
-
-        Raises:
-          ServiceError: If there is an issue with the request or response from the GCD API.
-        """
         params: dict[str, str] = params or {}
         params["format"] = "json"
-        url = self._base_url + endpoint + "/"
+        url = self._base_url + endpoint
         cache_params = f"?{urlencode({k: params[k] for k in sorted(params)})}"
         cache_key = url + cache_params
 
-        cache_data = self.cache.select(query=cache_key)
-        if cache_data:
-            return cache_data
-        response = self._perform_get_request(url=url, params=params)
-        self.cache.insert(query=cache_key, response=response)
+        if self._cache:
+            cache_data = self._cache.select(query=cache_key)
+            if cache_data:
+                return cache_data
+        response = self._perform_get_request(endpoint=endpoint, params=params)
+        if self._cache:
+            self._cache.insert(query=cache_key, response=response)
         return response
 
     def _fetch_item(self, endpoint: str) -> dict[str, Any]:
         return self._get_request(endpoint=endpoint)
 
     def _fetch_list(
-        self, endpoint: str, params: dict[str, str] | None = None
+        self, endpoint: str, max_results: int, params: dict[str, str] | None = None
     ) -> list[dict[str, Any]]:
         params: dict[str, str] = params or {}
         results: list[dict[str, Any]] = []
@@ -179,12 +158,15 @@ class GrandComicsDatabase:
             response = self._get_request(endpoint=endpoint, params={**params, "page": str(page)})
             results.extend(response["results"])
             page += 1
-            if response["next"] is None:
+            if response["next"] is None or len(results) >= max_results:
                 break
-        return results
+        return results[:max_results]
 
-    def list_publishers(self) -> list[Publisher]:
+    def list_publishers(self, max_results: int = 500) -> list[Publisher]:
         """Request a list of Publishers.
+
+        Args:
+            max_results: Limits the amount of results looked up and returned.
 
         Returns:
             A list of Publisher objects.
@@ -195,7 +177,7 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            results = self._fetch_list(endpoint="/publisher")
+            results = self._fetch_list(endpoint="/publisher/", max_results=max_results)
             return TypeAdapter(list[Publisher]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -215,17 +197,20 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._fetch_item(endpoint=f"/publisher/{id}")
+            result = self._fetch_item(endpoint=f"/publisher/{id}/")
             return TypeAdapter(Publisher).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def list_series(self, name: str | None = None, year: int | None = None) -> list[Series]:
+    def list_series(
+        self, name: str | None = None, year: int | None = None, max_results: int = 500
+    ) -> list[Series]:
         """Request a list of Series.
 
         Args:
             name: Filter the results using the series name.
             year: Filter the results using the series beginning year (Requires name to be passed).
+            max_results: Limits the amount of results looked up and returned.
 
         Returns:
             A list of Series objects.
@@ -237,11 +222,15 @@ class GrandComicsDatabase:
         """
         try:
             if name is None:
-                results = self._fetch_list(endpoint="/series")
+                results = self._fetch_list(endpoint="/series/", max_results=max_results)
             elif year is None:
-                results = self._fetch_list(endpoint=f"/series/name/{name}")
+                results = self._fetch_list(
+                    endpoint=f"/series/name/{name}/", max_results=max_results
+                )
             else:
-                results = self._fetch_list(endpoint=f"/series/name/{name}/year/{year}")
+                results = self._fetch_list(
+                    endpoint=f"/series/name/{name}/year/{year}/", max_results=max_results
+                )
             return TypeAdapter(list[Series]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -261,13 +250,13 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._fetch_item(endpoint=f"/series/{id}")
+            result = self._fetch_item(endpoint=f"/series/{id}/")
             return TypeAdapter(Series).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
 
     def list_issues(
-        self, series_name: str, issue_number: int, year: str | None = None
+        self, series_name: str, issue_number: int, year: int | None = None, max_results: int = 500
     ) -> list[BasicIssue]:
         """Request a list of Issues.
 
@@ -275,6 +264,7 @@ class GrandComicsDatabase:
             series_name: The name of the series to filter issues from.
             issue_number: The number to filter issues by.
             year: Filter the results using the issue year via its key_date.
+            max_results: Limits the amount of results looked up and returned.
 
         Returns:
             A list of Issue objects.
@@ -287,11 +277,13 @@ class GrandComicsDatabase:
         try:
             if year is None:
                 results = self._fetch_list(
-                    endpoint=f"/series/name/{series_name}/issue/{issue_number}"
+                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/",
+                    max_results=max_results,
                 )
             else:
                 results = self._fetch_list(
-                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/year/{year}"
+                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/year/{year}/",
+                    max_results=max_results,
                 )
             return TypeAdapter(list[BasicIssue]).validate_python(results)
         except ValidationError as err:
@@ -312,7 +304,7 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._fetch_item(endpoint=f"/issue/{id}")
+            result = self._fetch_item(endpoint=f"/issue/{id}/")
             return TypeAdapter(Issue).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
