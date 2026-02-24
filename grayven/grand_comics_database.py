@@ -6,42 +6,39 @@ This module provides the following classes:
 
 __all__ = ["GrandComicsDatabase"]
 
+import logging
 import platform
 from json import JSONDecodeError
-from typing import Any, ClassVar, Final
+from typing import Any, Final
 from urllib.parse import urlencode
 
-from httpx import HTTPStatusError, RequestError, TimeoutException, codes, get
+from httpx import BasicAuth, Client, HTTPStatusError, RequestError, TimeoutException, codes
 from pydantic import TypeAdapter, ValidationError
-from pyrate_limiter import Duration, Limiter, Rate, SQLiteBucket
+from pyrate_limiter import AbstractBucket, Duration, Limiter, Rate, SQLiteBucket
+from pyrate_limiter.extras.httpx_limiter import RateLimiterTransport
 
 from grayven import __version__
-from grayven.exceptions import RateLimitError, ServiceError
-from grayven.schemas.issue import BasicIssue, Issue
-from grayven.schemas.publisher import Publisher
-from grayven.schemas.series import Series
+from grayven.exceptions import AuthenticationError, RateLimitError, ServiceError
+from grayven.schemas import BasicIssue, Issue, Publisher, Series
 from grayven.sqlite_cache import SQLiteCache
 
 # Constants
-GCD_MINUTE_RATE: Final[int] = 20  # Let's use this so we don't hammer their server per minute
-GCD_HOUR_RATE: Final[int] = 200
-GCD_DAY_RATE: Final[int] = 2_0000
-SECONDS_PER_HOUR: Final[int] = 3_600
+LOGGER = logging.getLogger(__name__)
 SECONDS_PER_MINUTE: Final[int] = 60
-
-
-def rate_mapping(*arg: Any, **kwargs: Any) -> tuple[str, int]:
-    return "gcd", 1
+SECONDS_PER_HOUR: Final[int] = 3_600
+RATELIMIT_BUCKET: Final[AbstractBucket] = SQLiteBucket.init_from_file(
+    [Rate(20, Duration.MINUTE), Rate(200, Duration.HOUR), Rate(2_000, Duration.DAY)]
+)
 
 
 def format_time(seconds: str | float) -> str:
     """Format seconds into a verbose human-readable time string.
 
     Args:
-        seconds (int or float): Number of seconds to format
+        seconds: Number of seconds to format
 
     Returns:
-        str: Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
+        Formatted time string (e.g., "2 hours, 30 minutes, 45 seconds")
     """
     total_seconds = int(seconds)
 
@@ -70,176 +67,137 @@ class GrandComicsDatabase:
     """Class with functionality to request GCD API endpoints.
 
     Args:
-      email: The user's GCD email address, which is used for authentication.
-      password: The user's GCD password, which is used for authentication.
-      timeout: Set how long requests will wait for a response (in seconds).
-      cache: SQLiteCache to use if set.
+        email: The user's GCD email address, which is used for authentication.
+        password: The user's GCD password, which is used for authentication.
+        cache: SQLiteCache to use if set.
+        base_url: Root URL of the GCD API.
+        user_agent: Value sent in the `User-Agent` request header.
+        timeout: Set how long requests will wait for a response (in seconds).
+        limiter: Set a custom limiter, used for testing.
     """
 
-    API_URL = "https://www.comics.org/api"
-
-    _minute_rate = Rate(GCD_MINUTE_RATE, Duration.MINUTE)
-    _hour_rate = Rate(GCD_HOUR_RATE, Duration.HOUR)
-    _daily_rate = Rate(GCD_DAY_RATE, Duration.DAY)
-    _rates: ClassVar[list[Rate]] = [_minute_rate, _hour_rate, _daily_rate]
-    _bucket = SQLiteBucket.init_from_file(_rates)  # Save between sessions
-    # Can a `BucketFullException` be raised when used as a decorator?
-    _limiter = Limiter(_bucket, raise_when_fail=False, max_delay=Duration.DAY)
-    decorator = _limiter.as_decorator()
-
     def __init__(
-        self, email: str, password: str, timeout: int = 30, cache: SQLiteCache | None = None
+        self,
+        email: str,
+        password: str,
+        cache: SQLiteCache | None,
+        base_url: str = "https://www.comics.org/api",
+        user_agent: str = f"Grayven/{__version__} ({platform.system()}: {platform.release()}; Python v{platform.python_version()})",  # noqa: E501
+        timeout: float = 30,
+        limiter: Limiter = Limiter(RATELIMIT_BUCKET),  # noqa: B008
     ):
-        self.headers = {
-            "Accept": "application/json",
-            "User-Agent": f"Grayven/{__version__}/{platform.system()}: {platform.release()}",
-        }
-        self.email = email
-        self.password = password
-        self.timeout = timeout
-        self.cache = cache
+        self._base_url = base_url
+        self._client = Client(
+            base_url=self._base_url,
+            headers={"Accept": "application/json", "User-Agent": user_agent},
+            auth=BasicAuth(username=email, password=password),
+            timeout=timeout,
+            transport=RateLimiterTransport(limiter),
+        )
+        self._cache = cache
 
-    @decorator(rate_mapping)
     def _perform_get_request(
-        self, url: str, params: dict[str, str] | None = None
+        self, endpoint: str, params: dict[str, str] | None = None
     ) -> dict[str, Any]:
-        """Make GET request to GCD API endpoint.
-
-        Args:
-          url: The url to request information from.
-          params: Parameters to add to the request.
-
-        Returns:
-          Json response from the GCD API.
-
-        Raises:
-          RateLimitError: If the API rate limit is exceeded.
-          ServiceError: If there is an issue with the request or response from the GCD API.
-        """
-        if params is None:
-            params = {}
+        params: dict[str, str] = params or {}
 
         try:
-            response = get(
-                url,
-                params=params,
-                headers=self.headers,
-                auth=(self.email, self.password),
-                timeout=self.timeout,
-            )
+            response = self._client.get(endpoint, params=params)
             response.raise_for_status()
             return response.json()
         except RequestError as err:
-            raise ServiceError("Unable to connect to '%s'", url) from err
+            raise ServiceError(f"Unable to connect to '{self._base_url}{endpoint}'") from err
         except HTTPStatusError as err:
             try:
+                if err.response.status_code == codes.UNAUTHORIZED:
+                    raise AuthenticationError(err.response.json()["detail"]) from err
                 if err.response.status_code == codes.NOT_FOUND:
-                    raise ServiceError(err.response.json()["detail"])
+                    raise ServiceError(err.response.json()["detail"]) from err
                 if err.response.status_code == codes.TOO_MANY_REQUESTS:
-                    msg = (
-                        "Too Many API Requests: Need to wait "
-                        f"{format_time(err.response.headers['Retry-After'])}."
-                    )
-                    raise RateLimitError(msg)
+                    raise RateLimitError(
+                        f"Too Many API Requests: Need to wait {format_time(seconds=err.response.headers.get('Retry-After', 0))}."  # noqa: E501
+                    ) from err
                 raise ServiceError(err) from err
             except JSONDecodeError as err:
-                raise ServiceError("Unable to parse response from '%s' as Json", url) from err
+                raise ServiceError(
+                    f"Unable to parse response from '{self._base_url}{endpoint}' as Json"
+                ) from err
         except JSONDecodeError as err:
-            raise ServiceError("Unable to parse response from '%s' as Json", url) from err
+            raise ServiceError(
+                f"Unable to parse response from '{self._base_url}{endpoint}' as Json"
+            ) from err
         except TimeoutException as err:
             raise ServiceError("Service took too long to respond") from err
 
-    def _get_request(
-        self, endpoint: str, params: dict[str, str] | None = None, skip_cache: bool = False
-    ) -> dict[str, Any]:
-        """Check cache or make GET request to GCD API endpoint.
-
-        Args:
-          endpoint: The endpoint to request information from.
-          params: Parameters to add to the request.
-          skip_cache: Skip reading and writing to cache.
-
-        Returns:
-          Json response from the GCD API.
-
-        Raises:
-          ServiceError: If there is an issue with the request or response from the GCD API.
-        """
-        if params is None:
-            params = {}
+    def _get_request(self, endpoint: str, params: dict[str, str] | None = None) -> dict[str, Any]:
+        params: dict[str, str] = params or {}
         params["format"] = "json"
-
-        url = self.API_URL + endpoint + "/"
+        url = self._base_url + endpoint
         cache_params = f"?{urlencode({k: params[k] for k in sorted(params)})}"
         cache_key = url + cache_params
 
-        if self.cache and not skip_cache:
-            cached_response = self.cache.select(query=cache_key)
-            if cached_response:
-                return cached_response
-        response = self._perform_get_request(url=url, params=params)
-        if self.cache and not skip_cache:
-            self.cache.insert(query=cache_key, response=response)
+        if self._cache:
+            cache_data = self._cache.select(query=cache_key)
+            if cache_data:
+                return cache_data
+        response = self._perform_get_request(endpoint=endpoint, params=params)
+        if self._cache:
+            self._cache.insert(query=cache_key, response=response)
         return response
 
-    def _get_paged_request(
-        self, endpoint: str, params: dict[str, str] | None = None, max_results: int = 500
+    def _fetch_item(self, endpoint: str) -> dict[str, Any]:
+        return self._get_request(endpoint=endpoint)
+
+    def _fetch_list(
+        self, endpoint: str, max_results: int, params: dict[str, str] | None = None
     ) -> list[dict[str, Any]]:
-        """Get results from paged requests.
-
-        Args:
-          endpoint: The endpoint to request information from.
-          params: Parameters to add to the request.
-          max_results: Limits the amount of results looked up and returned.
-
-        Returns:
-          A list of Json response results.
-        """
-        if params is None:
-            params = {}
-        params["page"] = str(1)
-        response = self._get_request(endpoint=endpoint, params=params)
-        results = response["results"]
-        while (
-            response["results"] and len(results) < response["count"] and len(results) < max_results
-        ):
-            params["page"] = str(int(params["page"]) + 1)
-            response = self._get_request(endpoint=endpoint, params=params)
+        params: dict[str, str] = params or {}
+        results: list[dict[str, Any]] = []
+        page = int(params.get("page", "1"))
+        while True:
+            response = self._get_request(endpoint=endpoint, params={**params, "page": str(page)})
             results.extend(response["results"])
+            page += 1
+            if response["next"] is None or len(results) >= max_results:
+                break
         return results[:max_results]
 
     def list_publishers(self, max_results: int = 500) -> list[Publisher]:
         """Request a list of Publishers.
 
         Args:
-          max_results: Limits the amount if results looked up and returned.
+            max_results: Limits the amount of results looked up and returned.
 
         Returns:
-          A list of Publisher objects.
+            A list of Publisher objects.
 
         Raises:
-          ServiceError: If there is an issue with validating the response.
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            results = self._get_paged_request(endpoint="/publisher", max_results=max_results)
+            results = self._fetch_list(endpoint="/publisher/", max_results=max_results)
             return TypeAdapter(list[Publisher]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_publisher(self, id: int) -> Publisher | None:  # noqa: A002
+    def get_publisher(self, id: int) -> Publisher:  # noqa: A002
         """Request a Publisher using its id.
 
         Args:
-          id: The Publisher id.
+            id: The Publisher id.
 
         Returns:
-          A Publisher object or None if not found.
+            A Publisher object.
 
         Raises:
-          ServiceError: If there is an issue with validating the response.
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._get_request(endpoint=f"/publisher/{id}")
+            result = self._fetch_item(endpoint=f"/publisher/{id}/")
             return TypeAdapter(Publisher).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -250,95 +208,103 @@ class GrandComicsDatabase:
         """Request a list of Series.
 
         Args:
-          name: Filter the results using the series name.
-          year: Filter the results using the series beginning year (Requires name to be passed).
-          max_results: Limits the amount if results looked up and returned.
+            name: Filter the results using the series name.
+            year: Filter the results using the series beginning year (Requires name to be passed).
+            max_results: Limits the amount of results looked up and returned.
 
         Returns:
-          A list of Series objects.
+            A list of Series objects.
 
         Raises:
-          ServiceError: If there is an issue with validating the response.
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
         """
         try:
             if name is None:
-                results = self._get_paged_request(endpoint="/series", max_results=max_results)
+                results = self._fetch_list(endpoint="/series/", max_results=max_results)
             elif year is None:
-                results = self._get_paged_request(
-                    endpoint=f"/series/name/{name}", max_results=max_results
+                results = self._fetch_list(
+                    endpoint=f"/series/name/{name}/", max_results=max_results
                 )
             else:
-                results = self._get_paged_request(
-                    endpoint=f"/series/name/{name}/year/{year}", max_results=max_results
+                results = self._fetch_list(
+                    endpoint=f"/series/name/{name}/year/{year}/", max_results=max_results
                 )
             return TypeAdapter(list[Series]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_series(self, id: int) -> Series | None:  # noqa: A002
+    def get_series(self, id: int) -> Series:  # noqa: A002
         """Request a Series using its id.
 
         Args:
-          id: The Series id.
+            id: The Series id.
 
         Returns:
-          A Series object or None if not found.
+            A Series object.
 
         Raises:
-          ServiceError: If there is an issue with validating the response.
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._get_request(endpoint=f"/series/{id}")
+            result = self._fetch_item(endpoint=f"/series/{id}/")
             return TypeAdapter(Series).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
 
     def list_issues(
-        self, series_name: str, issue_number: int, year: str | None = None, max_results: int = 500
+        self, series_name: str, issue_number: int, year: int | None = None, max_results: int = 500
     ) -> list[BasicIssue]:
         """Request a list of Issues.
 
         Args:
-          series_name: The name of the series to filter issues from.
-          issue_number: The number to filter issues by.
-          year: Filter the results using the issue year via its key_date.
-          max_results: Limits the amount if results looked up and returned.
+            series_name: The name of the series to filter issues from.
+            issue_number: The number to filter issues by.
+            year: Filter the results using the issue year via its key_date.
+            max_results: Limits the amount of results looked up and returned.
 
         Returns:
-          A list of Issue objects.
+            A list of Issue objects.
 
         Raises:
-          ServiceError: If there is an issue with validating the response.
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
         """
         try:
             if year is None:
-                results = self._get_paged_request(
-                    endpoint=f"/series/name/{series_name}/issue/{issue_number}",
+                results = self._fetch_list(
+                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/",
                     max_results=max_results,
                 )
             else:
-                results = self._get_paged_request(
-                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/year/{year}",
+                results = self._fetch_list(
+                    endpoint=f"/series/name/{series_name}/issue/{issue_number}/year/{year}/",
                     max_results=max_results,
                 )
             return TypeAdapter(list[BasicIssue]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_issue(self, id: int) -> Issue | None:  # noqa: A002
+    def get_issue(self, id: int) -> Issue:  # noqa: A002
         """Request an Issue using its id.
 
         Args:
-          id: The Issue id.
+            id: The Issue id.
 
         Returns:
-          A Issue object or None if not found.
+            A Issue object.
 
         Raises:
-          ServiceError: If there is an issue with validating the response.
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._get_request(endpoint=f"/issue/{id}")
+            result = self._fetch_item(endpoint=f"/issue/{id}/")
             return TypeAdapter(Issue).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err

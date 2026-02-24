@@ -12,7 +12,7 @@ from grayven.grand_comics_database import GrandComicsDatabase
 def test_not_found(session: GrandComicsDatabase) -> None:
     """Test a 404 Not Found raises a ServiceError."""
     with pytest.raises(ServiceError):
-        session._get_request(endpoint="/invalid")  # noqa: SLF001
+        session._perform_get_request(endpoint="/invalid")  # noqa: SLF001
 
 
 def test_timeout(gcd_email: str, gcd_password: str) -> None:

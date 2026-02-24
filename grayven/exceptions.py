@@ -1,15 +1,13 @@
-"""The Exceptions module.
-
-This module provides the following classes:
-- ServiceError
-"""
-
-__all__ = ["RateLimitError", "ServiceError"]
+__all__ = ["AuthenticationError", "RateLimitError", "ServiceError"]
 
 
 class ServiceError(Exception):
     """Class for any API errors."""
 
 
-class RateLimitError(Exception):
+class AuthenticationError(ServiceError):
+    """Class for any Authentication errors."""
+
+
+class RateLimitError(ServiceError):
     """Class for any API Rate Limit errors."""

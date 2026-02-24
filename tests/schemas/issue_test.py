@@ -5,6 +5,7 @@ This module contains tests for Issue and BasicIssue objects.
 
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 import pytest
 from pytest_httpx import HTTPXMock
@@ -15,44 +16,51 @@ from grayven.schemas.issue import Issue
 
 
 @pytest.fixture
-def issue_no_page_json() -> dict[str, any]:
+def issue_no_page_json() -> dict[str, Any]:
     """Simple fixture for issue with no page."""
     return {
         "api_url": "https://www.comics.org/api/issue/2698986/?format=json",
-        "series_name": "Cruel Kingdom (2025 series)",
-        "descriptor": "1",
-        "publication_date": "January 2025",
-        "price": "4.99 USD",
-        "page_count": None,
-        "editing": "",
-        "indicia_publisher": "Oni-Lion Forge Publishing Group, LLC",
-        "brand": "EC An Entertaining Comic; Oni Press [eye]",
-        "isbn": "",
         "barcode": "64985600823700111",
-        "rating": "",
-        "on_sale_date": "2025-01-08",
-        "indicia_frequency": "",
-        "notes": "",
-        "variant_of": None,
-        "series": "https://www.comics.org/api/series/219801/?format=json",
-        "story_set": [],
+        "brand_emblem": "EC An Entertaining Comic",
         "cover": "https://files1.comics.org//img/gcd/covers_by_id/1743/w400/1743127.jpg",
+        "descriptor": "1 [Cover A - Adam Pollina]",
+        "editing": "",
+        "indicia_frequency": "",
+        "indicia_printer": "Printed in Canada",
+        "indicia_publisher": "Oni-Lion Forge Publishing Group, LLC",
+        "isbn": "",
+        "key_date": "2025-01-08",
+        "keywords": "",
+        "notes": "",
+        "number": "1",
+        "on_sale_date": "2025-01-08",
+        "page_count": None,
+        "price": "4.99 USD",
+        "publication_date": "January 2025",
+        "rating": "Teen 16+",
+        "series": "https://www.comics.org/api/series/219801/?format=json",
+        "series_name": "Cruel Kingdom (2025 series)",
+        "story_set": [],
+        "title": "",
+        "variant_name": "Cover A - Adam Pollina",
+        "variant_of": None,
+        "volume": "",
     }
 
 
 def test_issue_no_page(
-    gcd_email: str, gcd_password: str, httpx_mock: HTTPXMock, issue_no_page_json: dict[str, any]
+    gcd_email: str, gcd_password: str, httpx_mock: HTTPXMock, issue_no_page_json: dict[str, Any]
 ) -> None:
     """Test issue with no page count."""
     session = GrandComicsDatabase(
-        email=gcd_email, password=gcd_password
+        email=gcd_email, password=gcd_password, cache=None
     )  # We don't want to cache these results
     httpx_mock.add_response(json=issue_no_page_json)
     result = session.get_issue(2698986)
     assert isinstance(result, Issue)
     assert result.page_count is None
-    assert result.descriptor == "1"
-    assert result.publication_date == "January 2025"
+    assert result.descriptor == "1 [Cover A - Adam Pollina]"
+    assert result.publication_str == "January 2025"
 
 
 def test_issue(session: GrandComicsDatabase) -> None:
@@ -64,7 +72,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert str(result.api_url) == "https://www.comics.org/api/issue/242700/?format=json"
     assert result.series_name == "Green Lantern (2005 series)"
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
-    assert result.publication_date == "July 2005"
+    assert result.publication_str == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
     assert result.page_count == Decimal(48)
     assert result.editing == (
@@ -73,7 +81,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
         "Paul Levitz (credited) (publisher)"
     )
     assert result.indicia_publisher == "DC Comics"
-    assert result.brand == "DC [bullet]"
+    assert result.brand_emblem == "DC [bullet]"
     assert result.isbn == ""
     assert result.barcode == "76194124438900111"
     assert result.rating == "Approved by the Comics Code Authority"
@@ -87,12 +95,12 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.story_set[0].feature == "Green Lantern"
     assert result.story_set[0].sequence_number == 0
     assert result.story_set[0].page_count == Decimal(1)
-    assert result.story_set[0].script == ""
+    assert result.story_set[0].script == "None"
     assert result.story_set[0].pencils == "Carlos Pacheco (credited) (signed as Pacheco [scratch])"
     assert result.story_set[0].inks == "Jesús Merino (credited) (signed as Merino)"
     assert result.story_set[0].colors == "Peter Steigerwald (credited) (signed as Peter S:)"
-    assert result.story_set[0].letters == ""
-    assert result.story_set[0].editing == ""
+    assert result.story_set[0].letters == "None"
+    assert result.story_set[0].editing == "None"
     assert result.story_set[0].job_number == ""
     assert result.story_set[0].genre == "superhero"
     assert result.story_set[0].characters == "Green Lantern [Hal Jordan]"
@@ -118,7 +126,7 @@ def test_list_issues(session: GrandComicsDatabase) -> None:
     assert str(result.api_url) == "https://www.comics.org/api/issue/242700/?format=json"
     assert result.series_name == "Green Lantern (2005 series)"
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
-    assert result.publication_date == "July 2005"
+    assert result.publication_str == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
     assert result.page_count == Decimal(48)
     assert result.variant_of is None
@@ -141,11 +149,11 @@ def test_no_brand(session: GrandComicsDatabase) -> None:
     """Test get_issue when there is no brand."""
     result = session.get_issue(id=2746350)
     assert result is not None
-    assert result.brand is None
+    assert result.brand_emblem == ""
 
 
 def test_no_cover_url(session: GrandComicsDatabase) -> None:
     """Test get_issue when cover returns a blank str instead of a url."""
     result = session.get_issue(id=2746350)
     assert result is not None
-    assert result.cover is None
+    assert result.cover == ""

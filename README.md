@@ -18,8 +18,8 @@ A [Python](https://www.python.org/) wrapper for the [Grand Comics Database API](
 
 ## Installation
 
-```console
-pip install --user Grayven
+```sh
+pip install Grayven
 ```
 
 ### Example Usage
@@ -28,11 +28,7 @@ pip install --user Grayven
 from grayven.grand_comics_database import GrandComicsDatabase
 from grayven.sqlite_cache import SQLiteCache
 
-session = GrandComicsDatabase(
-    email="email@example.com",
-    password="password",
-    cache=SQLiteCache()
-)
+session = GrandComicsDatabase(email="email@example.com", password="password", cache=SQLiteCache())
 
 # Search for Series
 results = session.list_series(name="Green Lantern")

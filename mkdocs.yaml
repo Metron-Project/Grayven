@@ -57,6 +57,7 @@ nav:
       - sqlite_cache: grayven/sqlite_cache.md
   - grayven.schemas:
       - Package: grayven/schemas/__init__.md
+      - base: grayven/schemas/_base.md
       - issue: grayven/schemas/issue.md
       - publisher: grayven/schemas/publisher.md
       - series: grayven/schemas/series.md

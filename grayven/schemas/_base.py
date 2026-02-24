@@ -1,0 +1,19 @@
+__all__ = ["BaseModel", "blank_is_none"]
+
+from pydantic import BaseModel as PydanticModel
+
+
+class BaseModel(
+    PydanticModel,
+    populate_by_name=True,
+    str_strip_whitespace=True,
+    validate_assignment=True,
+    revalidate_instances="always",
+    extra="forbid",
+):
+    """Base model for Grayven resources."""
+
+
+def blank_is_none(value: str) -> str | None:
+    """Enforces blank strings to be None."""
+    return value or None
