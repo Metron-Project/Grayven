@@ -8,7 +8,6 @@ nav = [
   ]},
   {"grayven.cache" = [
     "grayven/cache/index.md",
-    {"schemas" = "grayven/cache/schemas.md"},
     {"sqlite_cache" = "grayven/cache/sqlite_cache.md"},
   ]},
   {"grayven.schemas" = [

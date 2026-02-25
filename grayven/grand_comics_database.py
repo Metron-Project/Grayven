@@ -137,12 +137,12 @@ class GrandComicsDatabase:
         cache_key = url + cache_params
 
         if self._cache:
-            cache_data = self._cache.select(key=cache_key)
+            cache_data = self._cache.select(query=cache_key)
             if cache_data:
-                return cache_data.response
+                return cache_data
         response = self._perform_get_request(endpoint=endpoint, params=params)
         if self._cache:
-            self._cache.insert(key=cache_key, response=response)
+            self._cache.insert(query=cache_key, response=response)
         return response
 
     def _fetch_item(self, endpoint: str) -> dict[str, Any]:
