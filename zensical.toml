@@ -1,0 +1,95 @@
+[project]
+nav = [
+  {"Home" = "index.md"},
+  {"grayven" = [
+    "grayven/index.md",
+    {"errors" = "grayven/errors.md"},
+    {"grand_comics_database" = "grayven/grand_comics_database.md"},
+  ]},
+  {"grayven.cache" = [
+    "grayven/cache/index.md",
+    {"schemas" = "grayven/cache/schemas.md"},
+    {"sqlite_cache" = "grayven/cache/sqlite_cache.md"},
+  ]},
+  {"grayven.schemas" = [
+    "grayven/schemas/index.md",
+    {"base" = "grayven/schemas/_base.md"},
+    {"issue" = "grayven/schemas/issue.md"},
+    {"publisher" = "grayven/schemas/publisher.md"},
+    {"series" = "grayven/schemas/series.md"},
+  ]},
+]
+repo_name = "Metron-Project/Grayven"
+repo_url = "https://github.com/Metron-Project/Grayven"
+site_author = "BuriedInCode"
+site_description = "A Python wrapper for the Grand Comics Database API."
+site_name = "Grayven"
+site_url = "https://grayven.readthedocs.io/en/stable"
+use_directory_urls = true
+
+[[project.extra.social]]
+icon = "simple/github"
+link = "https://github.com/Metron-Project/Grayven"
+
+[[project.extra.social]]
+icon = "simple/pypi"
+link = "https://pypi.org/p/Grayven"
+
+[[project.extra.social]]
+icon = "simple/matrix"
+link = "https://matrix.to/#/#metron-development:matrix.org"
+
+[project.markdown_extensions.pymdownx.highlight]
+auto_title = true
+
+[project.markdown_extensions.pymdownx.inlinehilite]
+
+[project.markdown_extensions.pymdownx.superfences]
+
+[project.plugins.mkdocstrings]
+default_handler = "python"
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_section_style = "spacy"
+docstring_style = "google"
+line_length = 100
+merge_init_into_class = true
+show_category_heading = true
+show_root_full_path = false
+show_root_heading = true
+show_signature_annotations = true
+show_sources = false
+
+[project.theme]
+features = [
+  "content.code.copy",
+  "navigation.expand",
+  "navigation.indexes",
+  "navigation.path",
+  "navigation.top",
+  "search.highlight",
+]
+variant = "classic"
+
+[project.theme.icon]
+logo = "simple/readthedocs"
+repo = "simple/git"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+primary = "blue grey"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+primary = "blue grey"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"

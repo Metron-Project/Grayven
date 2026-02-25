@@ -7,12 +7,13 @@ __pypackages__/
 build/
 dist/
 logs/
+site/
 
 # =====Files=====
 *.iml
 *.log
+*.txt
 .coverage
 .envrc
 .pdm-python
 .python-version
-pdm.lock
