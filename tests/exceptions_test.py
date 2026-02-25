@@ -5,7 +5,7 @@ This module contains tests for Exceptions.
 
 import pytest
 
-from grayven.exceptions import ServiceError
+from grayven.errors import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
 
 

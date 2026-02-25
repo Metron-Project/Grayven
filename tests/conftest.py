@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from grayven.cache import SQLiteCache
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.sqlite_cache import SQLiteCache
 
 
 @pytest.fixture(scope="session")

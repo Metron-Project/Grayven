@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 from pytest_httpx import HTTPXMock
 
-from grayven.exceptions import ServiceError
+from grayven.errors import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
 from grayven.schemas.issue import Issue
 

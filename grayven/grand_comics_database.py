@@ -18,9 +18,9 @@ from pyrate_limiter import AbstractBucket, Duration, Limiter, Rate, SQLiteBucket
 from pyrate_limiter.extras.httpx_limiter import RateLimiterTransport
 
 from grayven import __version__
-from grayven.exceptions import AuthenticationError, RateLimitError, ServiceError
+from grayven.cache import SQLiteCache
+from grayven.errors import AuthenticationError, RateLimitError, ServiceError
 from grayven.schemas import BasicIssue, Issue, Publisher, Series
-from grayven.sqlite_cache import SQLiteCache
 
 # Constants
 LOGGER = logging.getLogger(__name__)

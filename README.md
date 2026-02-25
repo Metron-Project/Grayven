@@ -8,11 +8,10 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-informational?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
 [![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
-[![Github - Contributors](https://img.shields.io/github/contributors/Metron-Project/Grayven.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Metron-Project/Grayven/graphs/contributors)
-[![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml)
-[![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/publishing.yaml)
-
-[![Read the Docs](https://img.shields.io/readthedocs/grayven?label=Read-the-Docs&logo=Read-the-Docs&style=flat-square)](https://grayven.readthedocs.io/en/stable)
+[![Linting](https://github.com/Metron-Project/Grayven/actions/workflows/linting.yaml/badge.svg)](https://github.com/Metron-Project/Grayven/actions/workflows/linting.yaml)
+[![Testing](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml/badge.svg)](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml)
+[![Publishing](https://github.com/Metron-Project/Grayven/actions/workflows/publishing.yaml/badge.svg)](https://github.com/Metron-Project/Grayven/actions/workflows/publishing.yaml)
+[![Read the Docs](https://img.shields.io/readthedocs/grayven?label=Read-the-Docs&logo=Read-the-Docs)](https://grayven.readthedocs.io/en/stable)
 
 A [Python](https://www.python.org/) wrapper for the [Grand Comics Database API](https://github.com/GrandComicsDatabase/gcd-django/wiki/API).
 
@@ -25,8 +24,8 @@ pip install Grayven
 ### Example Usage
 
 ```python
+from grayven.cache import SQLiteCache
 from grayven.grand_comics_database import GrandComicsDatabase
-from grayven.sqlite_cache import SQLiteCache
 
 session = GrandComicsDatabase(email="email@example.com", password="password", cache=SQLiteCache())
 

@@ -52,9 +52,11 @@ nav:
   - Home: index.md
   - grayven:
       - Package: grayven/__init__.md
-      - exceptions: grayven/exceptions.md
+      - errors: grayven/errors.md
       - grand_comics_database: grayven/grand_comics_database.md
-      - sqlite_cache: grayven/sqlite_cache.md
+  - grayven.cache:
+      - Package: grayven/cache/__init__.md
+      - sqlite_cache: grayven/cache/sqlite_cache.md
   - grayven.schemas:
       - Package: grayven/schemas/__init__.md
       - base: grayven/schemas/_base.md
