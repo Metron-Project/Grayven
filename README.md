@@ -9,6 +9,7 @@
 [![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Metron-Project/Grayven.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Metron-Project/Grayven/graphs/contributors)
+[![Github Action - Linting](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/linting.yaml?branch=main&logo=Github&label=Linting&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/linting.yaml)
 [![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml)
 [![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Metron-Project/Grayven/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Metron-Project/Grayven/actions/workflows/publishing.yaml)
 
@@ -25,8 +26,8 @@ pip install Grayven
 ### Example Usage
 
 ```python
-from grayven.grand_comics_database import GrandComicsDatabase
 from grayven.cache import SQLiteCache
+from grayven.grand_comics_database import GrandComicsDatabase
 
 session = GrandComicsDatabase(email="email@example.com", password="password", cache=SQLiteCache())
 
