@@ -49,7 +49,7 @@ def test_issue_no_page(
         email=gcd_email, password=gcd_password, cache=None
     )  # We don't want to cache these results
     httpx_mock.add_response(json=issue_no_page_json)
-    result = session.get_issue(2698986)
+    result = session.get_issue(issue_id=2698986)
     assert isinstance(result, Issue)
     assert result.page_count is None
     assert result.descriptor == "1 [Cover A - Adam Pollina]"
@@ -57,7 +57,7 @@ def test_issue_no_page(
 
 
 def test_issue(session: GrandComicsDatabase) -> None:
-    result = session.get_issue(id=242700)
+    result = session.get_issue(issue_id=242700)
     assert result is not None
     assert result.id == 242700
 
@@ -104,7 +104,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
 
 def test_issue_fail(session: GrandComicsDatabase) -> None:
     with pytest.raises(ServiceError):
-        session.get_issue(id=-1)
+        session.get_issue(issue_id=-1)
 
 
 def test_list_issues(session: GrandComicsDatabase) -> None:
@@ -134,13 +134,13 @@ def test_list_issue_invalid_number(session: GrandComicsDatabase) -> None:
 
 
 def test_no_brand(session: GrandComicsDatabase) -> None:
-    result = session.get_issue(id=2746350)
+    result = session.get_issue(issue_id=2746350)
     assert result is not None
     assert result.brand_emblem == ""
 
 
 def test_no_cover_url(session: GrandComicsDatabase) -> None:
-    result = session.get_issue(id=2820007)
+    result = session.get_issue(issue_id=2820007)
     assert result is not None
     assert result.cover is None
 
