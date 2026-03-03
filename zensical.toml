@@ -1,21 +1,21 @@
 [project]
 nav = [
   {"Home" = "index.md"},
-  {"grayven" = [
-    "grayven/index.md",
-    {"errors" = "grayven/errors.md"},
-    {"grand_comics_database" = "grayven/grand_comics_database.md"},
-  ]},
-  {"grayven.cache" = [
-    "grayven/cache/index.md",
-    {"sqlite_cache" = "grayven/cache/sqlite_cache.md"},
-  ]},
-  {"grayven.schemas" = [
-    "grayven/schemas/index.md",
-    {"base" = "grayven/schemas/_base.md"},
-    {"issue" = "grayven/schemas/issue.md"},
-    {"publisher" = "grayven/schemas/publisher.md"},
-    {"series" = "grayven/schemas/series.md"},
+  {"Reference" = [
+    {"grayven" = [
+      "grayven/index.md",
+      {"errors" = "grayven/errors.md"},
+      {"grand_comics_database" = "grayven/grand_comics_database.md"},
+    ]},
+    {"grayven.cache" = [
+      {"sqlite_cache" = "grayven/cache/sqlite_cache.md"},
+    ]},
+    {"grayven.schemas" = [
+      {"base" = "grayven/schemas/_base.md"},
+      {"issue" = "grayven/schemas/issue.md"},
+      {"publisher" = "grayven/schemas/publisher.md"},
+      {"series" = "grayven/schemas/series.md"},
+    ]},
   ]},
 ]
 repo_name = "Metron-Project/Grayven"
@@ -36,7 +36,11 @@ link = "https://pypi.org/p/Grayven"
 
 [[project.extra.social]]
 icon = "simple/matrix"
-link = "https://matrix.to/#/#metron-development:matrix.org"
+link = "https://matrix.to/#/#metron-general:matrix.org"
+
+[[project.extra.social]]
+icon = "simple/matrix"
+link = "https://matrix.to/#/#metron-devel:matrix.org"
 
 [project.markdown_extensions.pymdownx.highlight]
 auto_title = true
