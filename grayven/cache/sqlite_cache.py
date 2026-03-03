@@ -50,7 +50,7 @@ class SQLiteCache:
                 CREATE TABLE IF NOT EXISTS cache (
                     query TEXT NOT NULL PRIMARY KEY,
                     response TEXT,
-                    timestamp TIMESTAMP
+                    timestamp DATETIME
                 );
                 """
             )
