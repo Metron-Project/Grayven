@@ -1,8 +1,3 @@
-"""The Issue test module.
-
-This module contains tests for Issue and BasicIssue objects.
-"""
-
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -17,7 +12,6 @@ from grayven.schemas.issue import Issue
 
 @pytest.fixture
 def issue_no_page_json() -> dict[str, Any]:
-    """Simple fixture for issue with no page."""
     return {
         "api_url": "https://www.comics.org/api/issue/2698986/?format=json",
         "barcode": "64985600823700111",
@@ -51,7 +45,6 @@ def issue_no_page_json() -> dict[str, Any]:
 def test_issue_no_page(
     gcd_email: str, gcd_password: str, httpx_mock: HTTPXMock, issue_no_page_json: dict[str, Any]
 ) -> None:
-    """Test issue with no page count."""
     session = GrandComicsDatabase(
         email=gcd_email, password=gcd_password, cache=None
     )  # We don't want to cache these results
@@ -64,7 +57,6 @@ def test_issue_no_page(
 
 
 def test_issue(session: GrandComicsDatabase) -> None:
-    """Test using the issue endpoint with a valid id."""
     result = session.get_issue(id=242700)
     assert result is not None
     assert result.id == 242700
@@ -76,7 +68,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.price == "3.50 USD; 4.75 CAD"
     assert result.page_count == Decimal(48)
     assert result.editing == (
-        "Peter J. Tomasi (credited as  Peter Tomasi) (editor); Harvey Richards "
+        "Peter J. Tomasi (credited as Peter Tomasi) (editor); Harvey Richards "
         "(credited) (assistant editor); Dan DiDio (credited) (executive editor); "
         "Paul Levitz (credited) (publisher)"
     )
@@ -111,13 +103,11 @@ def test_issue(session: GrandComicsDatabase) -> None:
 
 
 def test_issue_fail(session: GrandComicsDatabase) -> None:
-    """Test using the issue endpoint with an invalid id."""
     with pytest.raises(ServiceError):
         session.get_issue(id=-1)
 
 
 def test_list_issues(session: GrandComicsDatabase) -> None:
-    """Test using the list_issues endpoint with a valid search."""
     results = session.list_issues(series_name="Green Lantern", issue_number=1, year=2005)
     assert len(results) == 6
     result = next(iter(x for x in results if x.id == 242700), None)
@@ -134,26 +124,22 @@ def test_list_issues(session: GrandComicsDatabase) -> None:
 
 
 def test_list_issue_invalid_series(session: GrandComicsDatabase) -> None:
-    """Test using the list_issues endpoint with an invalid series_name."""
     results = session.list_issues(series_name="invalid", issue_number=1)
     assert len(results) == 0
 
 
 def test_list_issue_invalid_number(session: GrandComicsDatabase) -> None:
-    """Test using the list_issues endpoint with an invalid issue_number."""
     results = session.list_issues(series_name="Green Lantern", issue_number=-1)
     assert len(results) == 0
 
 
 def test_no_brand(session: GrandComicsDatabase) -> None:
-    """Test get_issue when there is no brand."""
     result = session.get_issue(id=2746350)
     assert result is not None
     assert result.brand_emblem == ""
 
 
 def test_no_cover_url(session: GrandComicsDatabase) -> None:
-    """Test get_issue when cover returns a blank str instead of a url."""
-    result = session.get_issue(id=2746350)
+    result = session.get_issue(id=2820007)
     assert result is not None
-    assert result.cover == ""
+    assert result.cover is None

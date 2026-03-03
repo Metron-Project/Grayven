@@ -1,8 +1,3 @@
-"""The Series test module.
-
-This module contains tests for Series objects.
-"""
-
 import pytest
 
 from grayven.errors import ServiceError
@@ -10,7 +5,6 @@ from grayven.grand_comics_database import GrandComicsDatabase
 
 
 def test_series(session: GrandComicsDatabase) -> None:
-    """Test using the series endpoint with a valid id."""
     result = session.get_series(id=13519)
     assert result is not None
     assert result.id == 13519
@@ -35,13 +29,11 @@ def test_series(session: GrandComicsDatabase) -> None:
 
 
 def test_series_fail(session: GrandComicsDatabase) -> None:
-    """Test using the series endpoint with an invalid id."""
     with pytest.raises(ServiceError):
         session.get_series(id=-1)
 
 
 def test_list_series(session: GrandComicsDatabase) -> None:
-    """Test using the list_series endpoint with a valid search."""
     results = session.list_series(name="Green Lantern", year=2005)
     assert len(results) == 6
     result = next(iter(x for x in results if x.id == 13519), None)
@@ -67,12 +59,10 @@ def test_list_series(session: GrandComicsDatabase) -> None:
 
 
 def test_list_series_empty(session: GrandComicsDatabase) -> None:
-    """Test using the list_series endpoint with an invalid search."""
     results = session.list_series(name="invalid")
     assert len(results) == 0
 
 
 def test_list_series_without_year(session: GrandComicsDatabase) -> None:
-    """Test using the list_series endpoint without passing a year."""
     results = session.list_series(year=2005)
     assert len(results) >= 500

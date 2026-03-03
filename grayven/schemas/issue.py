@@ -1,11 +1,3 @@
-"""The Issue module.
-
-This module provides the following classes:
-- BasicIssue
-- Issue
-- Story
-"""
-
 __all__ = ["BasicIssue", "Issue"]
 
 import re
@@ -152,7 +144,7 @@ class Issue(BasicIssue):
     indicia_printer: str
     keywords: str
     story_set: list[Story]
-    cover: str
+    cover: Annotated[HttpUrl | None, BeforeValidator(blank_is_none)] = None
 
     @property
     def key_date(self) -> date | None:

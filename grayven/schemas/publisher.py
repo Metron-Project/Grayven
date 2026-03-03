@@ -1,9 +1,3 @@
-"""The Publisher module.
-
-This module provides the following classes:
-- Publisher
-"""
-
 __all__ = ["Publisher"]
 
 import re

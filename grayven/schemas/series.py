@@ -1,9 +1,3 @@
-"""The Series module.
-
-This module provides the following classes:
-- Series
-"""
-
 __all__ = ["Series"]
 
 import re
