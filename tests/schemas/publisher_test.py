@@ -7,7 +7,7 @@ from grayven.grand_comics_database import GrandComicsDatabase
 
 
 def test_publisher(session: GrandComicsDatabase) -> None:
-    result = session.get_publisher(id=54)
+    result = session.get_publisher(publisher_id=54)
     assert result is not None
     assert result.id == 54
 
@@ -32,9 +32,9 @@ def test_publisher(session: GrandComicsDatabase) -> None:
 
 def test_publisher_fail(session: GrandComicsDatabase) -> None:
     with pytest.raises(ServiceError):
-        session.get_publisher(id=-1)
+        session.get_publisher(publisher_id=-1)
 
 
 def test_list_publishers(session: GrandComicsDatabase) -> None:
     results = session.list_publishers()
-    assert len(results) >= 500
+    assert len(results) == 500

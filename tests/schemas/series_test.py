@@ -5,7 +5,7 @@ from grayven.grand_comics_database import GrandComicsDatabase
 
 
 def test_series(session: GrandComicsDatabase) -> None:
-    result = session.get_series(id=13519)
+    result = session.get_series(series_id=13519)
     assert result is not None
     assert result.id == 13519
 
@@ -30,7 +30,7 @@ def test_series(session: GrandComicsDatabase) -> None:
 
 def test_series_fail(session: GrandComicsDatabase) -> None:
     with pytest.raises(ServiceError):
-        session.get_series(id=-1)
+        session.get_series(series_id=-1)
 
 
 def test_list_series(session: GrandComicsDatabase) -> None:
@@ -65,4 +65,4 @@ def test_list_series_empty(session: GrandComicsDatabase) -> None:
 
 def test_list_series_without_year(session: GrandComicsDatabase) -> None:
     results = session.list_series(year=2005)
-    assert len(results) >= 500
+    assert len(results) == 500
