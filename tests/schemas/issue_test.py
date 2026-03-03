@@ -143,3 +143,39 @@ def test_no_cover_url(session: GrandComicsDatabase) -> None:
     result = session.get_issue(id=2820007)
     assert result is not None
     assert result.cover is None
+
+
+def test_onsale_weekly_issues(session: GrandComicsDatabase) -> None:
+    results = session.list_onsale_weekly_issues(year=2026, week=3)
+    assert len(results) == 236
+    result = next(iter(x for x in results if x.id == 2805480), None)
+    assert result is not None
+
+    assert str(result.api_url) == "https://www.comics.org/api/issue/2805480/?format=json"
+    assert result.series_name == "Amazing Spider-Man: Torn (2025 series)"
+    assert result.descriptor == "4 [Humberto Ramos Cover]"
+    assert result.publication_str == "March 2026"
+    assert result.price == "3.99 USD"
+    assert result.page_count == Decimal(32)
+    assert result.variant_of is None
+    assert str(result.series) == "https://www.comics.org/api/series/228352/?format=json"
+
+
+def test_onsale_weekly_issues_invalid_year(session: GrandComicsDatabase) -> None:
+    results = session.list_onsale_weekly_issues(year=26, week=3)
+    assert len(results) == 0
+
+
+def test_onsale_weekly_issues_invalid_week(session: GrandComicsDatabase) -> None:
+    results = session.list_onsale_weekly_issues(year=2026, week=55)
+    assert len(results) == 0
+
+
+def test_onsale_weekly_issues_negative_week(session: GrandComicsDatabase) -> None:
+    with pytest.raises(ServiceError):
+        session.list_onsale_weekly_issues(year=2026, week=-1)
+
+
+def test_onsale_weekly_issues_zero_week(session: GrandComicsDatabase) -> None:
+    results = session.list_onsale_weekly_issues(year=2026, week=0)
+    assert len(results) == 290

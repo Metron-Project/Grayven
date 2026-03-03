@@ -144,11 +144,11 @@ class GrandComicsDatabase:
                 break
         return results[:max_results]
 
-    def get_issue(self, id: int) -> Issue:  # noqa: A002
+    def get_issue(self, issue_id: int) -> Issue:
         """Request an Issue using its id.
 
         Args:
-            id: The Issue id.
+            issue_id: The Issue id.
 
         Returns:
             A Issue object.
@@ -159,8 +159,34 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._fetch_item(endpoint=f"/issue/{id}")
+            result = self._fetch_item(endpoint=f"/issue/{issue_id}")
             return TypeAdapter(Issue).validate_python(result)
+        except ValidationError as err:
+            raise ServiceError(err) from err
+
+    def list_onsale_weekly_issues(
+        self, year: int, week: int, max_results: int = 500
+    ) -> list[BasicIssue]:
+        """Request a list of issues on sale in a given ISO week.
+
+        Args:
+            year: The ISO year (4-digit year).
+            week: The ISO week number (1-53).
+            max_results: Maximum number of results to retrieve.
+
+        Returns:
+            List of BasicIssue objects representing issues that went on sale during the given week.
+
+        Raises:
+            ServiceError: If the API response is invalid or validation fails.
+            AuthenticationError: If credentials are invalid.
+            RateLimitError: If the API rate limit is exceeded.
+        """
+        try:
+            results = self._fetch_list(
+                endpoint=f"/issue/on_sale_weekly/{year}/week/{week}", max_results=max_results
+            )
+            return TypeAdapter(list[BasicIssue]).validate_python(results)
         except ValidationError as err:
             raise ServiceError(err) from err
 
@@ -168,7 +194,7 @@ class GrandComicsDatabase:
         """Request a list of Publishers.
 
         Args:
-            max_results: Limits the amount of results looked up and returned.
+            max_results: Maximum number of results to retrieve.
 
         Returns:
             A list of Publisher objects.
@@ -184,11 +210,11 @@ class GrandComicsDatabase:
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_publisher(self, id: int) -> Publisher:  # noqa: A002
+    def get_publisher(self, publisher_id: int) -> Publisher:
         """Request a Publisher using its id.
 
         Args:
-            id: The Publisher id.
+            publisher_id: The Publisher id.
 
         Returns:
             A Publisher object.
@@ -199,7 +225,7 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._fetch_item(endpoint=f"/publisher/{id}")
+            result = self._fetch_item(endpoint=f"/publisher/{publisher_id}")
             return TypeAdapter(Publisher).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -212,7 +238,7 @@ class GrandComicsDatabase:
         Args:
             name: Filter the results using the series name.
             year: Filter the results using the series beginning year (Requires name to be passed).
-            max_results: Limits the amount of results looked up and returned.
+            max_results: Maximum number of results to retrieve.
 
         Returns:
             A list of Series objects.
@@ -235,11 +261,11 @@ class GrandComicsDatabase:
         except ValidationError as err:
             raise ServiceError(err) from err
 
-    def get_series(self, id: int) -> Series:  # noqa: A002
+    def get_series(self, series_id: int) -> Series:
         """Request a Series using its id.
 
         Args:
-            id: The Series id.
+            series_id: The Series id.
 
         Returns:
             A Series object.
@@ -250,7 +276,7 @@ class GrandComicsDatabase:
             RateLimitError: If the API rate limit is exceeded.
         """
         try:
-            result = self._fetch_item(endpoint=f"/series/{id}")
+            result = self._fetch_item(endpoint=f"/series/{series_id}")
             return TypeAdapter(Series).validate_python(result)
         except ValidationError as err:
             raise ServiceError(err) from err
@@ -264,7 +290,7 @@ class GrandComicsDatabase:
             series_name: The name of the series to filter issues from.
             issue_number: The number to filter issues by.
             year: Filter the results using the issue year via its key_date.
-            max_results: Limits the amount of results looked up and returned.
+            max_results: Maximum number of results to retrieve.
 
         Returns:
             A list of Issue objects.
