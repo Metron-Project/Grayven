@@ -4,7 +4,13 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.5.0",
+  "mdformat >= 1.0.0",
+  "mdformat-gfm >= 1.0.0",
+  "mdformat-ruff >= 0.1.0",
+  "prek >= 0.3.0",
+  "ruff >= 0.15.0",
+  "toml-sort >= 0.24.0",
+  "ty >= 0.0.20",
 ]
 docs = [
   "mkdocstrings[python] >= 1.0.0",
@@ -142,3 +148,7 @@ min_version = "4.22"
 commands = [["pytest"]]
 dependency_groups = ["tests"]
 passenv = ["GCD_EMAIL", "GCD_PASSWORD"]
+
+[tool.ty.src]
+exclude = ["**/tests/"]
+include = ["**/grayven"]
