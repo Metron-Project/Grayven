@@ -1,4 +1,4 @@
-__all__ = ["BasicIssue", "Issue"]
+__all__ = ["BasicIssue", "Issue", "Story"]
 
 import re
 from datetime import date
