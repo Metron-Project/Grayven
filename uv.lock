@@ -303,7 +303,7 @@ tests = [
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-freezer", specifier = ">=0.4.0" },
     { name = "pytest-httpx", specifier = ">=0.36.0" },
-    { name = "tox", specifier = ">=4.47.0" },
+    { name = "tox", specifier = ">=4.49.0" },
     { name = "tox-uv", specifier = ">=1.33.0" },
 ]
 
