@@ -139,6 +139,7 @@ def test_no_brand(session: GrandComicsDatabase) -> None:
     assert result.brand_emblem == ""
 
 
+@pytest.mark.skip(reason="Cover is no longer null")
 def test_no_cover_url(session: GrandComicsDatabase) -> None:
     result = session.get_issue(issue_id=2820007)
     assert result is not None
@@ -147,7 +148,7 @@ def test_no_cover_url(session: GrandComicsDatabase) -> None:
 
 def test_onsale_weekly_issues(session: GrandComicsDatabase) -> None:
     results = session.list_onsale_weekly_issues(year=2026, week=3)
-    assert len(results) == 236
+    assert len(results) == 246
     result = next(iter(x for x in results if x.id == 2805480), None)
     assert result is not None
 
@@ -178,4 +179,4 @@ def test_onsale_weekly_issues_negative_week(session: GrandComicsDatabase) -> Non
 
 def test_onsale_weekly_issues_zero_week(session: GrandComicsDatabase) -> None:
     results = session.list_onsale_weekly_issues(year=2026, week=0)
-    assert len(results) == 290
+    assert len(results) == 307
