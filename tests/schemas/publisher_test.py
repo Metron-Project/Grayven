@@ -13,21 +13,21 @@ def test_publisher(session: GrandComicsDatabase) -> None:
 
     assert str(result.api_url) == "https://www.comics.org/api/publisher/54/?format=json"
     assert result.country == "us"
-    assert result.modified == datetime(2026, 3, 2, 23, 46, 1, tzinfo=timezone.utc)
+    assert result.modified == datetime(2026, 4, 20, 19, 55, 22, tzinfo=timezone.utc)
     assert result.name == "DC"
     assert result.year_began == 1935
     assert result.year_ended is None
     assert result.year_began_uncertain is False
     assert result.year_ended_uncertain is False
-    assert result.year_overall_began is None
+    assert result.year_overall_began == 1935
     assert result.year_overall_ended is None
     assert result.year_overall_began_uncertain is False
     assert result.year_overall_ended_uncertain is False
     assert str(result.url) == "http://www.dccomics.com/"
     assert result.brand_count == 27
     assert result.indicia_publisher_count == 53
-    assert result.series_count == 10316
-    assert result.issue_count == 57525
+    assert result.series_count == 10390
+    assert result.issue_count == 57673
 
 
 def test_publisher_fail(session: GrandComicsDatabase) -> None:
