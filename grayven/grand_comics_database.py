@@ -1,28 +1,28 @@
 __all__ = ["GrandComicsDatabase"]
 
-import logging
 import platform
-from json import JSONDecodeError
+from datetime import timedelta
+from http import HTTPStatus
+from pathlib import Path
 from typing import Any, Final
-from urllib.parse import urlencode
 
-from httpx import BasicAuth, Client, HTTPStatusError, RequestError, TimeoutException, codes
 from pydantic import TypeAdapter, ValidationError
-from pyrate_limiter import AbstractBucket, Duration, Limiter, Rate, SQLiteBucket
-from pyrate_limiter.extras.httpx_limiter import RateLimiterTransport
+from requests.auth import HTTPBasicAuth
+from requests.exceptions import HTTPError, JSONDecodeError, RequestException, Timeout
+from requests.sessions import Session
+from requests_cache import NEVER_EXPIRE, CacheMixin, SQLiteCache
+from requests_ratelimiter import LimiterMixin, SQLiteBucket
 
-from grayven import __version__
-from grayven.cache import SQLiteCache
+from grayven import __version__, get_cache_root
 from grayven.errors import AuthenticationError, RateLimitError, ServiceError
 from grayven.schemas import BasicIssue, Issue, Publisher, Series
 
-# Constants
-LOGGER = logging.getLogger(__name__)
 SECONDS_PER_MINUTE: Final[int] = 60
 SECONDS_PER_HOUR: Final[int] = 3_600
-RATELIMIT_BUCKET: Final[AbstractBucket] = SQLiteBucket.init_from_file(
-    [Rate(20, Duration.MINUTE), Rate(200, Duration.HOUR), Rate(2_000, Duration.DAY)]
-)
+
+
+class CachedLimiterSession(CacheMixin, LimiterMixin, Session):
+    pass
 
 
 def format_time(seconds: str | float) -> str:
@@ -48,84 +48,85 @@ class GrandComicsDatabase:
     Args:
         email: The user's GCD email address, which is used for authentication.
         password: The user's GCD password, which is used for authentication.
-        cache: SQLiteCache to use if set.
+        cache: Path to the SQLite cache file.
+            If not provided, a default path will be used under <cache-root>/cache.sqlite
         base_url: Root URL of the GCD API.
         user_agent: Value sent in the `User-Agent` request header.
         timeout: Set how long requests will wait for a response (in seconds).
-        limiter: Set a custom limiter, used for testing.
+        cache_expiry: Duration for which cached responses are valid.
+            Response cache-headers take precedence.
     """
 
     def __init__(
         self,
         email: str,
         password: str,
-        cache: SQLiteCache | None,
-        base_url: str = "https://www.comics.org/api",
+        cache: Path | None,
+        base_url: str | None = None,
         user_agent: str | None = None,
         timeout: float = 30,
-        limiter: Limiter = Limiter(RATELIMIT_BUCKET),  # noqa: B008
+        cache_expiry: timedelta = timedelta(days=14),
     ):
-        self._base_url = base_url
-        self._client = Client(
-            base_url=self._base_url,
-            headers={
+        self._base_url = base_url or "https://www.comics.org/api"
+        self._session = CachedLimiterSession(
+            backend=SQLiteCache(
+                db_path=cache or (get_cache_root() / "cache.sqlite"), serializer="json"
+            ),
+            expire_after=cache_expiry,
+            cache_control=cache_expiry != NEVER_EXPIRE,
+            per_minute=20,
+            per_hour=200,
+            per_day=2_000,
+            max_delay=timeout * 2,
+            bucket_class=SQLiteBucket,
+            per_host=False,
+            bucket_name="grand-comics-database",
+        )
+        self._session.headers.update(
+            {
                 "Accept": "application/json",
                 "User-Agent": user_agent
                 or f"Grayven/{__version__} ({platform.system()}: {platform.release()}; Python v{platform.python_version()})",  # noqa: E501
-            },
-            auth=BasicAuth(username=email, password=password),
-            params={"format": "json"},
-            timeout=timeout,
-            transport=RateLimiterTransport(limiter),
+            }
         )
-        self._cache = cache
-
-    def _perform_get_request(
-        self, endpoint: str, params: dict[str, str] | None = None
-    ) -> dict[str, Any]:
-        params: dict[str, str] = params or {}
-
-        try:
-            response = self._client.get(endpoint, params=params)
-            response.raise_for_status()
-            return response.json()
-        except RequestError as err:
-            raise ServiceError(f"Unable to connect to '{self._base_url}{endpoint}'") from err
-        except HTTPStatusError as err:
-            status_code = err.response.status_code
-            try:
-                if err.response.status_code == codes.UNAUTHORIZED:
-                    raise AuthenticationError(err.response.json()["detail"]) from err
-                if err.response.status_code == codes.NOT_FOUND:
-                    raise ServiceError(err.response.json()["detail"]) from err
-                if err.response.status_code == codes.TOO_MANY_REQUESTS:
-                    raise RateLimitError(
-                        f"Too Many API Requests: Need to wait {format_time(seconds=err.response.headers.get('Retry-After', 0))}."  # noqa: E501
-                    ) from err
-                raise ServiceError(err.response.json()) from err
-            except JSONDecodeError as err:
-                raise ServiceError(
-                    f"{status_code}: Unable to parse response from '{self._base_url}{endpoint}' as Json"  # noqa: E501
-                ) from err
-        except JSONDecodeError as err:
-            raise ServiceError(
-                f"Unable to parse response from '{self._base_url}{endpoint}' as Json"
-            ) from err
-        except TimeoutException as err:
-            raise ServiceError("Service took too long to respond") from err
+        self._session.auth = HTTPBasicAuth(username=email, password=password)
+        self._timeout = timeout
 
     def _get_request(self, endpoint: str, params: dict[str, str] | None = None) -> dict[str, Any]:
         params: dict[str, str] = params or {}
-        url = f"{self._base_url}{endpoint}/"
-        cache_params = f"?{urlencode({k: params[k] for k in sorted(params)})}"
-        cache_key = url + cache_params
-
-        if self._cache and (cache_data := self._cache.select(url=cache_key)):
-            return cache_data.response
-        response = self._perform_get_request(endpoint=endpoint + "/", params=params)
-        if self._cache:
-            self._cache.insert(url=cache_key, response=response)
-        return response
+        try:
+            response = self._session.get(
+                url=f"{self._base_url}{endpoint}/", params=params, timeout=self._timeout
+            )
+            response.raise_for_status()
+            return response.json()
+        except HTTPError as err:
+            status_code = (
+                err.response.status_code if err.response else HTTPStatus.INTERNAL_SERVER_ERROR
+            )
+            try:
+                response = err.response.json() if err.response else {}
+                if status_code == HTTPStatus.UNAUTHORIZED:
+                    raise AuthenticationError(response["detail"]) from err
+                if status_code == HTTPStatus.NOT_FOUND:
+                    raise ServiceError(response["detail"]) from err
+                if status_code == HTTPStatus.TOO_MANY_REQUESTS:
+                    raise RateLimitError(
+                        f"Too Many API Requests: Need to wait {format_time(seconds=err.response.headers.get('Retry-After', 0)) if err.response else 0}s."  # noqa: E501
+                    ) from err
+                raise ServiceError(f"{status_code}: {response}") from err
+            except JSONDecodeError as err:
+                raise ServiceError(
+                    f"{status_code}: Unable to parse response from '{self._base_url}{endpoint}/' as Json"  # noqa: E501
+                ) from err
+        except Timeout as err:
+            raise ServiceError("Service took too long to respond") from err
+        except RequestException as err:
+            raise ServiceError(f"Unable to connect to '{self._base_url}{endpoint}/'") from err
+        except JSONDecodeError as err:
+            raise ServiceError(
+                f"Unable to parse response from '{self._base_url}{endpoint}/' as Json"
+            ) from err
 
     def _fetch_item(self, endpoint: str) -> dict[str, Any]:
         return self._get_request(endpoint=endpoint)

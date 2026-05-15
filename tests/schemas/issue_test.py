@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from pytest_httpx import HTTPXMock
+from responses import RequestsMock as Mocker
 
 from grayven.errors import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
@@ -13,7 +13,7 @@ from grayven.schemas.issue import Issue
 @pytest.fixture
 def issue_no_page_json() -> dict[str, Any]:
     return {
-        "api_url": "https://www.comics.org/api/issue/2698986/?format=json",
+        "api_url": "https://www.comics.org/api/issue/2698986/",
         "barcode": "64985600823700111",
         "brand_emblem": "EC An Entertaining Comic",
         "cover": "https://files1.comics.org//img/gcd/covers_by_id/1743/w400/1743127.jpg",
@@ -32,7 +32,7 @@ def issue_no_page_json() -> dict[str, Any]:
         "price": "4.99 USD",
         "publication_date": "January 2025",
         "rating": "Teen 16+",
-        "series": "https://www.comics.org/api/series/219801/?format=json",
+        "series": "https://www.comics.org/api/series/219801/",
         "series_name": "Cruel Kingdom (2025 series)",
         "story_set": [],
         "title": "",
@@ -43,17 +43,16 @@ def issue_no_page_json() -> dict[str, Any]:
 
 
 def test_issue_no_page(
-    gcd_email: str, gcd_password: str, httpx_mock: HTTPXMock, issue_no_page_json: dict[str, Any]
+    mock_session: GrandComicsDatabase, issue_no_page_json: dict[str, Any]
 ) -> None:
-    session = GrandComicsDatabase(
-        email=gcd_email, password=gcd_password, cache=None
-    )  # We don't want to cache these results
-    httpx_mock.add_response(json=issue_no_page_json)
-    result = session.get_issue(issue_id=2698986)
-    assert isinstance(result, Issue)
-    assert result.page_count is None
-    assert result.descriptor == "1 [Cover A - Adam Pollina]"
-    assert result.publication_str == "January 2025"
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/issue/2698986/"
+        mock.get(url=url, status=200, json=issue_no_page_json)
+        result = mock_session.get_issue(issue_id=2698986)
+        assert isinstance(result, Issue)
+        assert result.page_count is None
+        assert result.descriptor == "1 [Cover A - Adam Pollina]"
+        assert result.publication_str == "January 2025"
 
 
 def test_issue(session: GrandComicsDatabase) -> None:
@@ -61,7 +60,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result is not None
     assert result.id == 242700
 
-    assert str(result.api_url) == "https://www.comics.org/api/issue/242700/?format=json"
+    assert str(result.api_url) == "https://www.comics.org/api/issue/242700/"
     assert result.series_name == "Green Lantern (2005 series)"
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.publication_str == "July 2005"
@@ -80,7 +79,7 @@ def test_issue(session: GrandComicsDatabase) -> None:
     assert result.on_sale_date == date(2005, 5, 25)
     assert result.indicia_frequency == "monthly"
     assert result.variant_of is None
-    assert str(result.series) == "https://www.comics.org/api/series/13519/?format=json"
+    assert str(result.series) == "https://www.comics.org/api/series/13519/"
     assert len(result.story_set) == 4
     assert result.story_set[0].type == "cover"
     assert result.story_set[0].title == ""
@@ -102,9 +101,13 @@ def test_issue(session: GrandComicsDatabase) -> None:
     )
 
 
-def test_issue_fail(session: GrandComicsDatabase) -> None:
-    with pytest.raises(ServiceError):
-        session.get_issue(issue_id=-1)
+def test_issue_fail(mock_session: GrandComicsDatabase) -> None:
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/issue/-1/"
+        mock.get(url=url, status=404, json={"detail": "Not found."})
+        with pytest.raises(ServiceError):
+            mock_session.get_issue(issue_id=-1)
+        mock.assert_call_count(url, 1)
 
 
 def test_list_issues(session: GrandComicsDatabase) -> None:
@@ -113,14 +116,14 @@ def test_list_issues(session: GrandComicsDatabase) -> None:
     result = next(iter(x for x in results if x.id == 242700), None)
     assert result is not None
 
-    assert str(result.api_url) == "https://www.comics.org/api/issue/242700/?format=json"
+    assert str(result.api_url) == "https://www.comics.org/api/issue/242700/"
     assert result.series_name == "Green Lantern (2005 series)"
     assert result.descriptor == "1 [Direct Sales - Carlos Pacheco / Jesus Merino Cover]"
     assert result.publication_str == "July 2005"
     assert result.price == "3.50 USD; 4.75 CAD"
     assert result.page_count == Decimal(48)
     assert result.variant_of is None
-    assert str(result.series) == "https://www.comics.org/api/series/13519/?format=json"
+    assert str(result.series) == "https://www.comics.org/api/series/13519/"
 
 
 def test_list_issue_invalid_series(session: GrandComicsDatabase) -> None:
@@ -152,14 +155,14 @@ def test_onsale_weekly_issues(session: GrandComicsDatabase) -> None:
     result = next(iter(x for x in results if x.id == 2805480), None)
     assert result is not None
 
-    assert str(result.api_url) == "https://www.comics.org/api/issue/2805480/?format=json"
+    assert str(result.api_url) == "https://www.comics.org/api/issue/2805480/"
     assert result.series_name == "Amazing Spider-Man: Torn (2025 series)"
     assert result.descriptor == "4 [Humberto Ramos Cover]"
     assert result.publication_str == "March 2026"
     assert result.price == "3.99 USD"
     assert result.page_count == Decimal(32)
     assert result.variant_of is None
-    assert str(result.series) == "https://www.comics.org/api/series/228352/?format=json"
+    assert str(result.series) == "https://www.comics.org/api/series/228352/"
 
 
 def test_onsale_weekly_issues_invalid_year(session: GrandComicsDatabase) -> None:
@@ -172,11 +175,15 @@ def test_onsale_weekly_issues_invalid_week(session: GrandComicsDatabase) -> None
     assert len(results) == 0
 
 
-def test_onsale_weekly_issues_negative_week(session: GrandComicsDatabase) -> None:
-    with pytest.raises(ServiceError):
-        session.list_onsale_weekly_issues(year=2026, week=-1)
+def test_onsale_weekly_issues_negative_week(mock_session: GrandComicsDatabase) -> None:
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/issue/on_sale_weekly/2026/week/-1/?page=1"
+        mock.get(url=url, status=400, json={"detail": "Invalid week number."})
+        with pytest.raises(ServiceError):
+            mock_session.list_onsale_weekly_issues(year=2026, week=-1)
+        mock.assert_call_count(url, 1)
 
 
 def test_onsale_weekly_issues_zero_week(session: GrandComicsDatabase) -> None:
     results = session.list_onsale_weekly_issues(year=2026, week=0)
-    assert len(results) == 307
+    assert len(results) == 313

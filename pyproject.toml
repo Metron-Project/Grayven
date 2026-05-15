@@ -7,27 +7,26 @@ dev = [
   "mdformat >= 1.0.0",
   "mdformat-gfm >= 1.0.0",
   "mdformat-ruff >= 0.1.0",
-  "prek >= 0.3.0",
+  "prek >= 0.4.0",
   "ruff >= 0.15.0",
   "toml-sort >= 0.24.0",
   "ty >= 0.0.30",
 ]
 docs = [
   "mkdocstrings[python] >= 1.0.0",
-  "zensical >= 0.0.30",
+  "zensical >= 0.0.40",
 ]
 tests = [
   "pytest >= 9.0.0",
   "pytest-cov >= 7.1.0",
-  "pytest-freezer >= 0.4.0",
-  "pytest-httpx >= 0.36.0",
-  "tox >= 4.53.0",
+  "responses >= 0.26.0",
+  "tox >= 4.54.0",
   "tox-uv >= 1.35.0",
 ]
 
 [project]
 authors = [
-  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"},
+  {email = "buriedincode@duckpond.nz", name = "BuriedInCode"},
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -46,9 +45,10 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "httpx[http2] >= 0.28.0",
   "pydantic >= 2.13.0",
-  "pyrate-limiter >= 4.1.0",
+  "requests >= 2.34.0",
+  "requests-cache >= 1.3.0",
+  "requests-ratelimiter >= 0.10.0",
 ]
 description = "A Python wrapper for the Grand Comics Database API."
 dynamic = ["version"]
@@ -56,7 +56,7 @@ keywords = ["comic", "comics", "metadata"]
 license = "MIT"
 license-files = ["LICENSE"]
 maintainers = [
-  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"},
+  {email = "buriedincode@duckpond.nz", name = "BuriedInCode"},
 ]
 name = "Grayven"
 readme = "README.md"
@@ -75,7 +75,7 @@ show_missing = true
 source = ["grayven"]
 
 [tool.hatch.build.targets.sdist]
-exclude = [".github/"]
+exclude = [".crow/", ".github/", ".woodpecker/"]
 
 [tool.hatch.version]
 path = "grayven/__init__.py"
@@ -125,7 +125,6 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "PLR2004", "S101"]
-"tests/limiter_test.py" = ["SLF001"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

@@ -1,6 +1,5 @@
-from datetime import datetime, timezone
-
 import pytest
+from responses import RequestsMock as Mocker
 
 from grayven.errors import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
@@ -11,9 +10,8 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert result is not None
     assert result.id == 54
 
-    assert str(result.api_url) == "https://www.comics.org/api/publisher/54/?format=json"
+    assert str(result.api_url) == "https://www.comics.org/api/publisher/54/"
     assert result.country == "us"
-    assert result.modified == datetime(2026, 4, 20, 19, 55, 22, tzinfo=timezone.utc)
     assert result.name == "DC"
     assert result.year_began == 1935
     assert result.year_ended is None
@@ -26,13 +24,17 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert str(result.url) == "http://www.dccomics.com/"
     assert result.brand_count == 27
     assert result.indicia_publisher_count == 53
-    assert result.series_count == 10390
-    assert result.issue_count == 57673
+    assert result.series_count == 10416
+    assert result.issue_count == 57720
 
 
-def test_publisher_fail(session: GrandComicsDatabase) -> None:
-    with pytest.raises(ServiceError):
-        session.get_publisher(publisher_id=-1)
+def test_publisher_fail(mock_session: GrandComicsDatabase) -> None:
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/publisher/-1/"
+        mock.get(url=url, status=404, json={"detail": "Not found."})
+        with pytest.raises(ServiceError):
+            mock_session.get_publisher(publisher_id=-1)
+        mock.assert_call_count(url, 1)
 
 
 def test_list_publishers(session: GrandComicsDatabase) -> None:
