@@ -33,7 +33,7 @@ from grayven.grand_comics_database import GrandComicsDatabase
 session = GrandComicsDatabase(
     email="email@example.com",
     password="Password",
-    cache=Path("cache.sqlite"),  # Optional, defaults to ~/.cache/grayven/grayven.sqlite
+    cache=Path("cache.sqlite"),  # Optional, defaults to ~/.cache/grayven/cache.sqlite
     cache_expiry=timedelta(days=1),  # Optional, defaults to 14 days
 )
 

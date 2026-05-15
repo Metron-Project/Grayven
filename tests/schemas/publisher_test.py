@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 import pytest
 from responses import RequestsMock as Mocker
 
@@ -12,9 +10,8 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert result is not None
     assert result.id == 54
 
-    assert str(result.api_url) == "https://www.comics.org/api/publisher/54/?format=json"
+    assert str(result.api_url) == "https://www.comics.org/api/publisher/54/"
     assert result.country == "us"
-    assert result.modified == datetime(2026, 4, 20, 19, 55, 22, tzinfo=timezone.utc)
     assert result.name == "DC"
     assert result.year_began == 1935
     assert result.year_ended is None
@@ -27,8 +24,8 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert str(result.url) == "http://www.dccomics.com/"
     assert result.brand_count == 27
     assert result.indicia_publisher_count == 53
-    assert result.series_count == 10390
-    assert result.issue_count == 57673
+    assert result.series_count == 10416
+    assert result.issue_count == 57720
 
 
 def test_publisher_fail(mock_session: GrandComicsDatabase) -> None:

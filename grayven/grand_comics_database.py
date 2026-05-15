@@ -49,7 +49,7 @@ class GrandComicsDatabase:
         email: The user's GCD email address, which is used for authentication.
         password: The user's GCD password, which is used for authentication.
         cache: Path to the SQLite cache file.
-            If not provided, a default path will be used under <cache-root>/grayven.sqlite
+            If not provided, a default path will be used under <cache-root>/cache.sqlite
         base_url: Root URL of the GCD API.
         user_agent: Value sent in the `User-Agent` request header.
         timeout: Set how long requests will wait for a response (in seconds).
@@ -70,7 +70,7 @@ class GrandComicsDatabase:
         self._base_url = base_url or "https://www.comics.org/api"
         self._session = CachedLimiterSession(
             backend=SQLiteCache(
-                db_path=cache or (get_cache_root() / "grayven.sqlite"), serializer="json"
+                db_path=cache or (get_cache_root() / "cache.sqlite"), serializer="json"
             ),
             expire_after=cache_expiry,
             cache_control=cache_expiry != NEVER_EXPIRE,
@@ -89,7 +89,6 @@ class GrandComicsDatabase:
                 or f"Grayven/{__version__} ({platform.system()}: {platform.release()}; Python v{platform.python_version()})",  # noqa: E501
             }
         )
-        self._session.params.update({"format": "json"})
         self._session.auth = HTTPBasicAuth(username=email, password=password)
         self._timeout = timeout
 
@@ -97,7 +96,7 @@ class GrandComicsDatabase:
         params: dict[str, str] = params or {}
         try:
             response = self._session.get(
-                url=f"{self._base_url}/{endpoint}/", params=params, timeout=self._timeout
+                url=f"{self._base_url}{endpoint}/", params=params, timeout=self._timeout
             )
             response.raise_for_status()
             return response.json()
@@ -115,7 +114,7 @@ class GrandComicsDatabase:
                     raise RateLimitError(
                         f"Too Many API Requests: Need to wait {format_time(seconds=err.response.headers.get('Retry-After', 0)) if err.response else 0}s."  # noqa: E501
                     ) from err
-                raise ServiceError(response) from err
+                raise ServiceError(f"{status_code}: {response}") from err
             except JSONDecodeError as err:
                 raise ServiceError(
                     f"{status_code}: Unable to parse response from '{self._base_url}{endpoint}/' as Json"  # noqa: E501
