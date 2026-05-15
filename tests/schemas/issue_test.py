@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from pytest_httpx import HTTPXMock
+from responses import RequestsMock as Mocker
 
 from grayven.errors import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
@@ -43,17 +43,16 @@ def issue_no_page_json() -> dict[str, Any]:
 
 
 def test_issue_no_page(
-    gcd_email: str, gcd_password: str, httpx_mock: HTTPXMock, issue_no_page_json: dict[str, Any]
+    mock_session: GrandComicsDatabase, issue_no_page_json: dict[str, Any]
 ) -> None:
-    session = GrandComicsDatabase(
-        email=gcd_email, password=gcd_password, cache=None
-    )  # We don't want to cache these results
-    httpx_mock.add_response(json=issue_no_page_json)
-    result = session.get_issue(issue_id=2698986)
-    assert isinstance(result, Issue)
-    assert result.page_count is None
-    assert result.descriptor == "1 [Cover A - Adam Pollina]"
-    assert result.publication_str == "January 2025"
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/issue/2698986/"
+        mock.get(url=url, status=200, json=issue_no_page_json)
+        result = mock_session.get_issue(issue_id=2698986)
+        assert isinstance(result, Issue)
+        assert result.page_count is None
+        assert result.descriptor == "1 [Cover A - Adam Pollina]"
+        assert result.publication_str == "January 2025"
 
 
 def test_issue(session: GrandComicsDatabase) -> None:
@@ -102,9 +101,13 @@ def test_issue(session: GrandComicsDatabase) -> None:
     )
 
 
-def test_issue_fail(session: GrandComicsDatabase) -> None:
-    with pytest.raises(ServiceError):
-        session.get_issue(issue_id=-1)
+def test_issue_fail(mock_session: GrandComicsDatabase) -> None:
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/issue/-1/"
+        mock.get(url=url, status=404, json={"detail": "Not found."})
+        with pytest.raises(ServiceError):
+            mock_session.get_issue(issue_id=-1)
+        mock.assert_call_count(url, 1)
 
 
 def test_list_issues(session: GrandComicsDatabase) -> None:
@@ -172,9 +175,13 @@ def test_onsale_weekly_issues_invalid_week(session: GrandComicsDatabase) -> None
     assert len(results) == 0
 
 
-def test_onsale_weekly_issues_negative_week(session: GrandComicsDatabase) -> None:
-    with pytest.raises(ServiceError):
-        session.list_onsale_weekly_issues(year=2026, week=-1)
+def test_onsale_weekly_issues_negative_week(mock_session: GrandComicsDatabase) -> None:
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/onsale_weekly_issues/"
+        mock.get(url=url, status=400, json={"detail": "Invalid week number."})
+        with pytest.raises(ServiceError):
+            mock_session.list_onsale_weekly_issues(year=2026, week=-1)
+        mock.assert_call_count(url, 1)
 
 
 def test_onsale_weekly_issues_zero_week(session: GrandComicsDatabase) -> None:

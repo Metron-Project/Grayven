@@ -1,26 +1,39 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
+from requests_cache import NEVER_EXPIRE
 
-from grayven.cache import SQLiteCache
 from grayven.grand_comics_database import GrandComicsDatabase
 
 
 @pytest.fixture(scope="session")
-def gcd_email() -> str:
-    return os.getenv("GCD_EMAIL", "<EMAIL>")
+def email() -> str:
+    return os.getenv("GCD_EMAIL", "UNSET")
 
 
 @pytest.fixture(scope="session")
-def gcd_password() -> str:
-    return os.getenv("GCD_PASSWORD", "passwrd")
+def password() -> str:
+    return os.getenv("GCD_PASSWORD", "UNSET")
 
 
 @pytest.fixture(scope="session")
-def session(gcd_email: str, gcd_password: str) -> GrandComicsDatabase:
+def session(email: str, password: str) -> GrandComicsDatabase:
     return GrandComicsDatabase(
-        email=gcd_email,
-        password=gcd_password,
-        cache=SQLiteCache(path=Path("tests/cache.sqlite"), expiry=None),
+        email=email,
+        password=password,
+        cache=Path("tests") / "cache.sqlite",
+        cache_expiry=NEVER_EXPIRE,
+    )
+
+
+@pytest.fixture
+def mock_session(tmp_path: Path) -> GrandComicsDatabase:
+    return GrandComicsDatabase(
+        email="UNSET",
+        password="UNSET",  # noqa: S106
+        base_url="https://comics.mock/api",
+        cache=tmp_path / "grayven.sqlite",
+        cache_expiry=timedelta(seconds=1),
     )

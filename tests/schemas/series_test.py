@@ -1,4 +1,5 @@
 import pytest
+from responses import RequestsMock as Mocker
 
 from grayven.errors import ServiceError
 from grayven.grand_comics_database import GrandComicsDatabase
@@ -28,9 +29,13 @@ def test_series(session: GrandComicsDatabase) -> None:
     assert str(result.publisher) == "https://www.comics.org/api/publisher/54/?format=json"
 
 
-def test_series_fail(session: GrandComicsDatabase) -> None:
-    with pytest.raises(ServiceError):
-        session.get_series(series_id=-1)
+def test_series_fail(mock_session: GrandComicsDatabase) -> None:
+    with Mocker(assert_all_requests_are_fired=True) as mock:
+        url = "https://comics.mock/api/series/-1/"
+        mock.get(url=url, status=404, json={"detail": "Not found."})
+        with pytest.raises(ServiceError):
+            mock_session.get_series(series_id=-1)
+        mock.assert_call_count(url, 1)
 
 
 def test_list_series(session: GrandComicsDatabase) -> None:

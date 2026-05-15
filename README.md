@@ -6,8 +6,8 @@
 [![PyPI - License](https://img.shields.io/pypi/l/Grayven.svg?logo=Python&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
 [![prek](https://img.shields.io/badge/prek-enabled-informational?logo=prek&style=flat-square)](https://github.com/j178/prek)
-[![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
-[![Ty](https://img.shields.io/badge/ty-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ty)
+[![Ruff](https://img.shields.io/badge/Ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
+[![ty](https://img.shields.io/badge/ty-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ty)
 
 [![Linting](https://github.com/Metron-Project/Grayven/actions/workflows/linting.yaml/badge.svg)](https://github.com/Metron-Project/Grayven/actions/workflows/linting.yaml)
 [![Testing](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml/badge.svg)](https://github.com/Metron-Project/Grayven/actions/workflows/testing.yaml)
@@ -25,10 +25,17 @@ pip install Grayven
 ### Example Usage
 
 ```python
-from grayven.cache import SQLiteCache
+from datetime import timedelta
+from pathlib import Path
+
 from grayven.grand_comics_database import GrandComicsDatabase
 
-session = GrandComicsDatabase(email="email@example.com", password="password", cache=SQLiteCache())
+session = GrandComicsDatabase(
+    email="email@example.com",
+    password="Password",
+    cache=Path("cache.sqlite"),  # Optional, defaults to ~/.cache/grayven/grayven.sqlite
+    cache_expiry=timedelta(days=1),  # Optional, defaults to 14 days
+)
 
 # Search for Series
 results = session.list_series(name="Green Lantern")
