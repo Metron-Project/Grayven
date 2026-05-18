@@ -20,7 +20,7 @@ nav = [
   ]},
 ]
 repo_name = "Metron-Project/Grayven"
-repo_url = "https://github.com/Metron-Project/Grayven"
+repo_url = "https://codeberg.org/Metron-Project/Grayven"
 site_author = "BuriedInCode"
 site_description = "A Python wrapper for the Grand Comics Database API."
 site_name = "Grayven"
@@ -28,8 +28,8 @@ site_url = "https://grayven.readthedocs.io/en/stable"
 use_directory_urls = true
 
 [[project.extra.social]]
-icon = "simple/github"
-link = "https://github.com/Metron-Project/Grayven"
+icon = "simple/codeberg"
+link = "https://codeberg.org/Metron-Project/Grayven"
 
 [[project.extra.social]]
 icon = "simple/pypi"

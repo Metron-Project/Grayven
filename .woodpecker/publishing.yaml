@@ -1,0 +1,44 @@
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+    branch: main
+  - event: tag
+
+steps:
+  build:
+    image: "ghcr.io/astral-sh/uv:trixie-slim"
+    commands:
+      - uv build
+
+  validate:
+    image: "ghcr.io/astral-sh/uv:trixie-slim"
+    depends_on:
+      - build
+    commands:
+      - uv run --with twine twine check dist/*
+
+  publish-pypi:
+    image: "ghcr.io/astral-sh/uv:trixie-slim"
+    when:
+      - event: tag
+    depends_on:
+      - validate
+    environment:
+      UV_PUBLISH_TOKEN:
+        from_secret: pypi-token
+    commands:
+      - uv publish
+
+  publish-codeberg:
+    image: "ghcr.io/astral-sh/uv:trixie-slim"
+    when:
+      - event: tag
+    depends_on:
+      - validate
+    environment:
+      UV_PUBLISH_URL: "https://codeberg.org/api/packages/Metron-Project/pypi"
+      UV_PUBLISH_TOKEN:
+        from_secret: codeberg-token
+    commands:
+      - uv publish

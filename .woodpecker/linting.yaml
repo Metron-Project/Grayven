@@ -1,0 +1,13 @@
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+    branch: main
+
+steps:
+  prek:
+    image: "ghcr.io/astral-sh/uv:python3.10-trixie"
+    depends_on: []
+    commands:
+      - uv sync --locked --dev --all-extras
+      - uv run prek run -a

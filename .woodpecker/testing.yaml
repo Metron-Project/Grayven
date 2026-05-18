@@ -1,0 +1,23 @@
+depends_on:
+  - linting
+
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+    branch: main
+
+matrix:
+  include:
+    - python: 3.10
+    - python: 3.11
+    - python: 3.12
+    - python: 3.13
+    - python: 3.14
+
+steps:
+  pytest:
+    image: "ghcr.io/astral-sh/uv:python${python}-trixie-slim"
+    commands:
+      - uv sync --locked --no-dev --all-extras --group tests
+      - uv run --no-dev pytest

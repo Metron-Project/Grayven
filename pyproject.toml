@@ -65,8 +65,8 @@ requires-python = ">= 3.10"
 [project.urls]
 Documentation = "https://grayven.readthedocs.io/en/stable"
 Homepage = "https://pypi.org/project/Grayven"
-Issues = "https://github.com/Metron-Project/Grayven/issues"
-Source = "https://github.com/Metron-Project/Grayven"
+Issues = "https://codeberg.org/Metron-Project/Grayven/issues"
+Source = "https://codeberg.org/Metron-Project/Grayven"
 
 [tool.coverage.report]
 show_missing = true
