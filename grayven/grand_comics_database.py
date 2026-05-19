@@ -61,10 +61,10 @@ class GrandComicsDatabase:
         self,
         email: str,
         password: str,
-        cache: Path | None,
+        cache: Path | None = None,
         base_url: str | None = None,
         user_agent: str | None = None,
-        timeout: float = 30,
+        timeout: float = 20,
         cache_expiry: timedelta = timedelta(days=14),
     ):
         self._base_url = base_url or "https://www.comics.org/api"
@@ -102,17 +102,19 @@ class GrandComicsDatabase:
             return response.json()
         except HTTPError as err:
             status_code = (
-                err.response.status_code if err.response else HTTPStatus.INTERNAL_SERVER_ERROR
+                HTTPStatus.INTERNAL_SERVER_ERROR
+                if err.response is None
+                else err.response.status_code
             )
             try:
-                response = err.response.json() if err.response else {}
+                response = {} if err.response is None else err.response.json()
                 if status_code == HTTPStatus.UNAUTHORIZED:
                     raise AuthenticationError(response["detail"]) from err
                 if status_code == HTTPStatus.NOT_FOUND:
                     raise ServiceError(response["detail"]) from err
                 if status_code == HTTPStatus.TOO_MANY_REQUESTS:
                     raise RateLimitError(
-                        f"Too Many API Requests: Need to wait {format_time(seconds=err.response.headers.get('Retry-After', 0)) if err.response else 0}s."  # noqa: E501
+                        f"Too Many API Requests: Need to wait {format_time(seconds=0 if err.response is None else err.response.headers.get('Retry-After', 0))}s."  # noqa: E501
                     ) from err
                 raise ServiceError(f"{status_code}: {response}") from err
             except JSONDecodeError as err:
