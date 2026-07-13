@@ -7,10 +7,6 @@ nav = [
       {"errors" = "grayven/errors.md"},
       {"grand_comics_database" = "grayven/grand_comics_database.md"},
     ]},
-    {"grayven.cache" = [
-      {"schemas" = "grayven/cache/schemas.md"},
-      {"sqlite_cache" = "grayven/cache/sqlite_cache.md"},
-    ]},
     {"grayven.schemas" = [
       {"base" = "grayven/schemas/_base.md"},
       {"issue" = "grayven/schemas/issue.md"},

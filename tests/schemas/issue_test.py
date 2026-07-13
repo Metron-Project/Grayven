@@ -151,7 +151,7 @@ def test_no_cover_url(session: GrandComicsDatabase) -> None:
 
 def test_onsale_weekly_issues(session: GrandComicsDatabase) -> None:
     results = session.list_onsale_weekly_issues(year=2026, week=3)
-    assert len(results) == 246
+    assert len(results) == 254
     result = next(iter(x for x in results if x.id == 2805480), None)
     assert result is not None
 
@@ -186,4 +186,4 @@ def test_onsale_weekly_issues_negative_week(mock_session: GrandComicsDatabase) -
 
 def test_onsale_weekly_issues_zero_week(session: GrandComicsDatabase) -> None:
     results = session.list_onsale_weekly_issues(year=2026, week=0)
-    assert len(results) == 313
+    assert len(results) == 338

@@ -10,17 +10,17 @@ dev = [
   "prek >= 0.4.0",
   "ruff >= 0.15.0",
   "toml-sort >= 0.24.0",
-  "ty >= 0.0.30",
+  "ty >= 0.0.50",
 ]
 docs = [
   "mkdocstrings[python] >= 1.0.0",
-  "zensical >= 0.0.40",
+  "zensical >= 0.0.50",
 ]
 tests = [
-  "pytest >= 9.0.0",
+  "pytest >= 9.1.0",
   "pytest-cov >= 7.1.0",
   "responses >= 0.26.0",
-  "tox >= 4.54.0",
+  "tox >= 4.56.0",
   "tox-uv >= 1.35.0",
 ]
 

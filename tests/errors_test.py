@@ -11,7 +11,7 @@ def test_not_found(mock_session: GrandComicsDatabase) -> None:
         url = "https://comics.mock/api/invalid/"
         mock.get(url=url, status=404, json={"detail": "Not found."})
         with pytest.raises(ServiceError):
-            mock_session._get_request(endpoint="/invalid")  # noqa: SLF001
+            mock_session._request(method="GET", endpoint="/invalid")  # noqa: SLF001
         mock.assert_call_count(url, 1)
 
 

@@ -24,8 +24,8 @@ def test_publisher(session: GrandComicsDatabase) -> None:
     assert str(result.url) == "http://www.dccomics.com/"
     assert result.brand_count == 27
     assert result.indicia_publisher_count == 53
-    assert result.series_count == 10416
-    assert result.issue_count == 57720
+    assert result.series_count == 10481
+    assert result.issue_count == 57898
 
 
 def test_publisher_fail(mock_session: GrandComicsDatabase) -> None:
