@@ -1,19 +1,19 @@
 [project]
 nav = [
-  {"Home" = "index.md"},
-  {"Reference" = [
-    {"grayven" = [
+  { "Home" = "index.md" },
+  { "Reference" = [
+    { "grayven" = [
       "grayven/index.md",
-      {"errors" = "grayven/errors.md"},
-      {"grand_comics_database" = "grayven/grand_comics_database.md"},
-    ]},
-    {"grayven.schemas" = [
-      {"base" = "grayven/schemas/_base.md"},
-      {"issue" = "grayven/schemas/issue.md"},
-      {"publisher" = "grayven/schemas/publisher.md"},
-      {"series" = "grayven/schemas/series.md"},
-    ]},
-  ]},
+      { "errors" = "grayven/errors.md" },
+      { "grand_comics_database" = "grayven/grand_comics_database.md" },
+    ] },
+    { "grayven.schemas" = [
+      { "base" = "grayven/schemas/_base.md" },
+      { "issue" = "grayven/schemas/issue.md" },
+      { "publisher" = "grayven/schemas/publisher.md" },
+      { "series" = "grayven/schemas/series.md" },
+    ] },
+  ] },
 ]
 repo_name = "Metron-Project/Grayven"
 repo_url = "https://codeberg.org/Metron-Project/Grayven"

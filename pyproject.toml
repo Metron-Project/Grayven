@@ -7,26 +7,26 @@ dev = [
   "mdformat >= 1.0.0",
   "mdformat-gfm >= 1.0.0",
   "mdformat-ruff >= 0.1.0",
-  "prek >= 0.4.0",
+  "prek >= 0.5.0",
   "ruff >= 0.16.0",
-  "toml-sort >= 0.24.0",
-  "ty >= 0.0.70",
+  "toml-sort >= 0.25.0",
+  "ty >= 0.0.80",
 ]
 docs = [
   "mkdocstrings[python] >= 1.0.0",
-  "zensical >= 0.0.50",
+  "zensical >= 0.0.60",
 ]
 tests = [
   "pytest >= 9.1.0",
   "pytest-cov >= 7.1.0",
   "responses >= 0.26.0",
-  "tox >= 4.60.0",
+  "tox >= 4.64.0",
   "tox-uv >= 1.36.0",
 ]
 
 [project]
 authors = [
-  {email = "buriedincode@duckpond.nz", name = "BuriedInCode"},
+  { email = "buriedincode@duckpond.nz", name = "BuriedInCode" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -35,12 +35,12 @@ classifiers = [
   "Intended Audience :: Developers",
   "Natural Language :: English",
   "Operating System :: OS Independent",
+  "Programming Language :: Python",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python",
   "Topic :: Internet",
   "Typing :: Typed",
 ]
@@ -56,7 +56,7 @@ keywords = ["comic", "comics", "metadata"]
 license = "MIT"
 license-files = ["LICENSE"]
 maintainers = [
-  {email = "buriedincode@duckpond.nz", name = "BuriedInCode"},
+  { email = "buriedincode@duckpond.nz", name = "BuriedInCode" },
 ]
 name = "Grayven"
 readme = "README.md"
@@ -137,9 +137,9 @@ convention = "google"
 [tool.tomlsort]
 all = true
 ignore_case = true
-trailing_comma_inline_array = true
 overrides."tool.tox.env_list".inline_arrays = false
 overrides."tool.tox.env_run_base.commands".inline_arrays = false
+trailing_comma_inline_array = true
 
 [tool.tox]
 env_list = ["3.10", "3.11", "3.12", "3.13", "3.14"]
