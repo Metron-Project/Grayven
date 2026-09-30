@@ -6,7 +6,7 @@ when:
 
 steps:
   prek:
-    image: "ghcr.io/astral-sh/uv:python3.10-trixie"
+    image: "ghcr.io/astral-sh/uv:trixie"
     depends_on: []
     commands:
       - uv sync --locked --dev --all-extras
