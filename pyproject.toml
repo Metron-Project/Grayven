@@ -17,7 +17,7 @@ docs = [
   "zensical >= 0.0.70",
 ]
 tests = [
-  "pytest >= 9.1.0",
+  "pytest >=9.2.0",
   "pytest-cov >= 7.1.0",
   "responses >= 0.26.0",
   "tox >= 4.67.0",

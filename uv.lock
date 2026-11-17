@@ -431,7 +431,7 @@ docs = [
     { name = "zensical", specifier = ">=0.0.70" },
 ]
 tests = [
-    { name = "pytest", specifier = ">=9.1.0" },
+    { name = "pytest", specifier = ">=9.2.0" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
     { name = "responses", specifier = ">=0.26.0" },
     { name = "tox", specifier = ">=4.67.0" },
